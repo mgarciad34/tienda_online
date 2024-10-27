@@ -1,21 +1,21 @@
 <template>
   <div class="login-container">
-      <div class="login-card">
-          <h2>Inicio de sesión</h2>
-          <form @submit.prevent="handleLogin">
-              <div class="form-group">
-                  <input type="email" id="email" v-model="email" required placeholder="Correo electrónico o teléfono">
-              </div>
-              <div class="form-group">
-                  <input type="password" id="password" v-model="password" required placeholder="Contraseña">
-              </div>
-              <button type="submit">Iniciar sesión</button>
-              <div class="login-options">
-                  <span>¿Olvidaste tu contraseña?</span>
-                  <span>Aun  no tienes cuenta? <router-link to="/registro">Regístrate</router-link></span>
-              </div>
-          </form>
-      </div>
+    <div class="login-card">
+      <h2>Inicio de sesión</h2>
+      <form @submit.prevent="handleLogin">
+        <div class="form-group">
+          <input type="email" id="email" v-model="email" required placeholder="Correo electrónico o teléfono">
+        </div>
+        <div class="form-group">
+          <input type="password" id="password" v-model="password" required placeholder="Contraseña">
+        </div>
+        <button type="submit">Iniciar sesión</button>
+        <div class="login-options">
+          <span>¿Olvidaste tu contraseña?</span>
+          <span>Aun no tienes cuenta? <router-link to="/registro">Regístrate</router-link></span>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -31,23 +31,26 @@ const handleLogin = () => {
   const password = document.getElementById('password').value;
 
   axios.post('http://localhost:8000/api/login', {
-      email: email,
-      contrasena: password
+    email: email,
+    contrasena: password
   })
-      .then(response => {
-          if(response.data.rol === "Administrador"){
-            sessionStorage.setItem("token", response.data.token)
-            sessionStorage.setItem("rol", response.data.rol)
-            window.location.href = "/admin/dashboard"
-          }else if(response.data.rol === "Usuario"){
-            sessionStorage.setItem("token", response.data.token)
-            sessionStorage.setItem("rol", response.data.rol)
-            window.location.href = "/usuario/dashboard"
-          }
-      })
-      .catch(error => {
-          console.error('Error:', error.response);
-      });
+    .then(response => {
+
+      if (response.data.rol === "Administrador") {
+        sessionStorage.setItem("correo", response.data.correo)
+        sessionStorage.setItem("token", response.data.token)
+        sessionStorage.setItem("rol", response.data.rol)
+        window.location.href = "/admin/dashboard"
+      } else if (response.data.rol === "Usuario") {
+        sessionStorage.setItem("correo", response.data.correo)
+        sessionStorage.setItem("token", response.data.token)
+        sessionStorage.setItem("rol", response.data.rol)
+        window.location.href = "/usuario/dashboard"
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error.response);
+    });
 };
 
 </script>
