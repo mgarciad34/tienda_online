@@ -12,7 +12,6 @@
                     <td>{{ item.created_at | formatDate }}</td>
                     <td>{{ item.updated_at | formatDate }}</td>
                     <td>
-                        <!-- Nueva columna con un solo botón contenedor -->
                         <div class="button-container d-flex justify-center">
                             <v-btn style="background-color: yellow" icon @click="fncActualizarCategoria(item)">
                                 <v-icon>mdi-pencil</v-icon>
@@ -39,7 +38,7 @@ export default {
                 { text: 'Nombre de Categoría', value: 'nombre' },
                 { text: 'Fecha de Creación', value: 'created_at' },
                 { text: 'Última Actualización', value: 'updated_at' },
-                { text: '', value: '' } // Columna vacía para el botón
+                { text: '', value: '' } 
             ],
             items: [],
             loading: true,
@@ -61,10 +60,7 @@ export default {
                     'Authorization': `Bearer ${token}`
                 }
             };
-
             const response = await axios.get('http://localhost:8000/api/admin/categorias', config);
-
-            // Extract only the categories from the response
             this.items = response.data.categorias;
             this.loading = false;
         } catch (error) {
@@ -75,12 +71,9 @@ export default {
     methods: {
         fncActualizarCategoria(item) {
             console.log('Editar categoría:', item);
-            // Aquí puedes agregar la lógica para editar una categoría
         },
         fncEliminarCategoria(item) {
             console.log('Eliminar categoría:', item);
-
-            // Make a DELETE request to remove the category
             axios.delete(`http://localhost:8000/api/admin/categorias/${item.id}`, {
                 headers: {
                     'Authorization': `Bearer ${sessionStorage.getItem('token')}`
@@ -88,12 +81,8 @@ export default {
             })
                 .then(response => {
                     const index = this.items.findIndex(cat => cat.id === item.id);
-
-                    // If found, splice out the item from the array
                     if (index !== -1) {
                         this.items.splice(index, 1);
-
-                        // Optionally, reset the search input
                         this.search = '';
                     }
                 })
