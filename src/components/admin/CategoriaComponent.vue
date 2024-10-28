@@ -1,0 +1,120 @@
+<template>
+    <v-app>
+        <v-toolbar flat color="white">
+            <v-btn color="primary" elevation="0">Crear Categoría</v-btn>
+        </v-toolbar>
+
+        <v-data-table :headers="headers.text" :items="items" :loading="loading" :search="search" class="elevation-1">
+            <template v-slot:item="{ item }">
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.nombre }}</td>
+                    <td>{{ item.created_at | formatDate }}</td>
+                    <td>{{ item.updated_at | formatDate }}</td>
+                    <td>
+                        <!-- Nueva columna con un solo botón contenedor -->
+                        <div class="button-container d-flex justify-center">
+                            <v-btn style="background-color: yellow" icon @click="fncActualizarCategoria(item)">
+                                <v-icon>mdi-pencil</v-icon>
+                            </v-btn>
+                            <v-btn style="background-color: red;" icon @click="fncEliminarCategoria(item)">
+                                <v-icon>mdi-delete</v-icon>
+                            </v-btn>
+                        </div>
+                    </td>
+                </tr>
+            </template>
+        </v-data-table>
+    </v-app>
+</template>
+
+<script>
+import axios from 'axios';
+
+export default {
+    data() {
+        return {
+            headers: [
+                { text: 'ID', value: 'id' },
+                { text: 'Nombre de Categoría', value: 'nombre' },
+                { text: 'Fecha de Creación', value: 'created_at' },
+                { text: 'Última Actualización', value: 'updated_at' },
+                { text: '', value: '' } // Columna vacía para el botón
+            ],
+            items: [],
+            loading: true,
+            search: ''
+        }
+    },
+    filters: {
+        formatDate(date) {
+            if (!date) return date;
+            const [year, month, day] = date.split('-');
+            return `${day}/${month}/${year}`;
+        }
+    },
+    async mounted() {
+        try {
+            const token = sessionStorage.getItem('token');
+            const config = {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            };
+
+            const response = await axios.get('http://localhost:8000/api/admin/categorias', config);
+
+            // Extract only the categories from the response
+            this.items = response.data.categorias;
+            this.loading = false;
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+            this.loading = false;
+        }
+    },
+    methods: {
+        fncActualizarCategoria(item) {
+            console.log('Editar categoría:', item);
+            // Aquí puedes agregar la lógica para editar una categoría
+        },
+        fncEliminarCategoria(item) {
+            console.log('Eliminar categoría:', item);
+
+            // Make a DELETE request to remove the category
+            axios.delete(`http://localhost:8000/api/admin/categorias/${item.id}`, {
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                }
+            })
+                .then(response => {
+                    const index = this.items.findIndex(cat => cat.id === item.id);
+
+                    // If found, splice out the item from the array
+                    if (index !== -1) {
+                        this.items.splice(index, 1);
+
+                        // Optionally, reset the search input
+                        this.search = '';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al eliminar categoría:', error.response?.data || error.message);
+                });
+        }
+    }
+}
+</script>
+
+<style scoped>
+.button-container {
+    width: 100%;
+}
+
+.button-container .v-btn {
+    margin-right: 4px !important;
+}
+
+.button-container .v-btn:last-child {
+    margin-left: 4px !important;
+}
+</style>

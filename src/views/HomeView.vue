@@ -68,12 +68,11 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  margin-top: 9rem;
 }
 
 .login-card {
   padding: 40px;
-  background-color: white;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(14, 30, 37, 0.12);
   width: 400px;

@@ -66,13 +66,14 @@ body {
     display: flex;
     justify-content: center;
     min-height: 100vh;
+
 }
 
 .registro-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%;
+    margin-top: 9rem;
     width: 100%;
 }
 
