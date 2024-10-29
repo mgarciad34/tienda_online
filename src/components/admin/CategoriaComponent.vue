@@ -9,8 +9,6 @@
                 <tr>
                     <td>{{ item.id }}</td>
                     <td>{{ item.nombre }}</td>
-                    <td>{{ item.created_at | formatDate }}</td>
-                    <td>{{ item.updated_at | formatDate }}</td>
                     <td>
                         <div class="button-container d-flex justify-center">
                             <v-btn style="background-color: yellow" icon @click="fncActualizarCategoria(item)">
@@ -36,8 +34,6 @@ export default {
             headers: [
                 { text: 'ID', value: 'id' },
                 { text: 'Nombre de Categoría', value: 'nombre' },
-                { text: 'Fecha de Creación', value: 'created_at' },
-                { text: 'Última Actualización', value: 'updated_at' },
                 { text: '', value: '' } 
             ],
             items: [],
@@ -52,8 +48,12 @@ export default {
             return `${day}/${month}/${year}`;
         }
     },
-    async mounted() {
-        try {
+    mounted() {
+       this.fncObtenerCategorias();
+    },
+    methods: {
+        async fncObtenerCategorias(){
+            try {
             const token = sessionStorage.getItem('token');
             const config = {
                 headers: {
@@ -67,8 +67,7 @@ export default {
             console.error('Error fetching categories:', error);
             this.loading = false;
         }
-    },
-    methods: {
+        },
         fncActualizarCategoria(item) {
             console.log('Editar categoría:', item);
         },
