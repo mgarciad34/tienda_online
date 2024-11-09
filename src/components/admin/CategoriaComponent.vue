@@ -20,7 +20,7 @@
                     <td>{{ item.nombre }}</td>
                     <td>
                         <div class="button-container d-flex justify-center">
-                            <v-btn style="background-color: yellow" icon @click="fncActualizarCategoria(item)">
+                            <v-btn style="background-color: yellow" icon @click="fncMostrarModalActualizar(item)">
                                 <v-icon>mdi-pencil</v-icon>
                             </v-btn>
                             <v-btn style="background-color: red;" icon @click="fncEliminarCategoria(item)">
@@ -31,6 +31,26 @@
                 </tr>
             </template>
         </v-data-table>
+
+        <!-- Modal para actualizar la categoría -->
+        <v-dialog v-model="dialog" max-width="500px">
+            <v-card>
+                <v-card-title>
+                    <span class="text-h5">Actualizar Categoría</span>
+                </v-card-title>
+                <v-card-text>
+                    <v-text-field
+                        label="Nombre de Categoría"
+                        v-model="categoriaSeleccionada.nombre"
+                    ></v-text-field>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" text @click="dialog = false">Cancelar</v-btn>
+                    <v-btn color="blue darken-1" text @click="fncActualizarCategoria">Guardar</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-app>
 </template>
 
@@ -40,7 +60,9 @@ import axios from 'axios';
 export default {
     data() {
         return {
+            dialog: false, // Controla la visibilidad del modal
             txtNombreCategoria: '',
+            categoriaSeleccionada: {}, // Almacena la categoría seleccionada para edición
             headers: [
                 { text: 'ID', value: 'id' },
                 { text: 'Nombre de Categoría', value: 'nombre' },
@@ -93,31 +115,53 @@ export default {
                 this.loading = false;
             }
         },
-        fncActualizarCategoria(item) {
-            console.log('Editar categoría:', item);
+        fncMostrarModalActualizar(item) {
+            this.categoriaSeleccionada = { ...item };
+            this.dialog = true;
         },
-        fncEliminarCategoria(item) {
-            console.log('Eliminar categoría:', item);
-            axios.delete(`http://localhost:8000/api/admin/categorias/${item.id}`, {
-                headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-                }
-            })
-                .then(response => {
-                    const index = this.items.findIndex(cat => cat.id === item.id);
-                    if (index !== -1) {
-                        this.items.splice(index, 1);
-                        this.search = '';
+        async fncActualizarCategoria() {
+            try {
+                const token = sessionStorage.getItem('token');
+                const config = {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
                     }
-                })
-                .catch(error => {
-                    console.error('Error al eliminar categoría:', error.response?.data || error.message);
+                };
+                const response = await axios.put(`http://localhost:8000/api/admin/categorias/${this.categoriaSeleccionada.id}`,
+                    { nombre: this.categoriaSeleccionada.nombre },
+                    config);
+
+                const index = this.items.findIndex(item => item.id === this.categoriaSeleccionada.id);
+                if (index !== -1) {
+                    this.items[index] = { ...this.categoriaSeleccionada };
+                }
+                this.dialog = false;
+
+            } catch (error) {
+                console.error('Error al actualizar la categoría:', error.response?.data || error.message);
+            }
+        },
+        async fncEliminarCategoria(item) {
+            console.log('Eliminar categoría:', item);
+            try {
+                const token = sessionStorage.getItem('token');
+                await axios.delete(`http://localhost:8000/api/admin/categorias/${item.id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
                 });
+                const index = this.items.findIndex(cat => cat.id === item.id);
+                if (index !== -1) {
+                    this.items.splice(index, 1);
+                    this.search = '';
+                }
+            } catch (error) {
+                console.error('Error al eliminar categoría:', error.response?.data || error.message);
+            }
         }
     }
 };
 </script>
-
 
 <style scoped>
 .button-container {
