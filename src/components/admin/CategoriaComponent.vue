@@ -60,9 +60,9 @@ import axios from 'axios';
 export default {
     data() {
         return {
-            dialog: false, // Controla la visibilidad del modal
+            dialog: false,
             txtNombreCategoria: '',
-            categoriaSeleccionada: {}, // Almacena la categoría seleccionada para edición
+            categoriaSeleccionada: {},
             headers: [
                 { text: 'ID', value: 'id' },
                 { text: 'Nombre de Categoría', value: 'nombre' },
