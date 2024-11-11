@@ -33,7 +33,7 @@
                             </v-navigation-drawer>
                         </v-col>
                     </v-row>
-                    <CategoriaComponent id="CategoriaComponent" style="display: none;" />
+                    <CategoriaComponent id="CategoriaComponent" style="display: block;" />
                     <ProductosComponent id="ProductosComponent" style="display: none;" />   
                 </v-container>
             </v-main>
