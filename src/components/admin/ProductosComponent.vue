@@ -1,6 +1,6 @@
 <template>
   <v-container class="productos-container" fluid>
-    <v-btn color="green">
+    <v-btn color="green" @click="dialogInsertar = true">
       <v-icon>mdi-plus</v-icon> Crear nuevo producto
     </v-btn>
     <v-row>
@@ -19,16 +19,8 @@
       <v-col v-else v-for="producto in productos" :key="producto.id" cols="12" sm="6" md="4" lg="3">
         <v-card class="producto-card" elevation="2">
           <v-carousel :show-arrows="false" height="200px">
-            <v-carousel-item
-              v-for="(img, index) in [producto.img1, producto.img2, producto.img3]"
-              :key="index"
-            >
-              <v-img
-                :src="img"
-                alt="Imagen del producto"
-                class="producto-img"
-                height="200px"
-              ></v-img>
+            <v-carousel-item v-for="(img, index) in [producto.img1, producto.img2, producto.img3]" :key="index">
+              <v-img :src="img" alt="Imagen del producto" class="producto-img" height="200px"></v-img>
             </v-carousel-item>
           </v-carousel>
 
@@ -56,20 +48,52 @@
         </v-card>
       </v-col>
     </v-row>
+    <!-- Modal Insertar -->
+    <v-dialog v-model="dialogInsertar" width="500" @click:outside="closeDialog">
+      <v-card>
+        <v-card-title>Insertar Nuevo Producto</v-card-title>
+        <v-card-text>
+          <v-text-field v-model="nombreProducto" label="Nombre del Producto" outlined></v-text-field>
+
+          <v-file-input v-model="file1" label="Seleccionar imagen" accept="image/*" outlined></v-file-input>
+          <v-file-input v-model="file2" label="Seleccionar imagen" accept="image/*" outlined></v-file-input>
+          <v-file-input v-model="file3" label="Seleccionar imagen" accept="image/*" outlined></v-file-input>
+          <v-textarea v-model="descripcionProducto" label="Descripción del Producto" outlined rows="3" auto-grow></v-textarea>
+          <v-text-field v-model="precioProducto" label="Precio del Producto" outlined type="number" min="0"></v-text-field>
+          <v-text-field v-model="existenciasProducto" label="Existencias del Producto" outlined type="number" min="0"></v-text-field>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-btn @click="closeDialog">Cerrar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Fin Modal Insertar-->
   </v-container>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
 export default {
-  setup() {
-    const productos = ref([]);
-    const isLoading = ref(true);
-    const error = ref(null);
-
-    const fncObtenerProductos = async () => {
+  data() {
+    return {
+      productos: [],
+      isLoading: true,
+      error: null,
+      dialogInsertar: false,
+      nombreProducto: '',
+      file1: null,
+      file2: null,
+      file3: null,
+      descripcionProducto: '',
+      precioProducto: null,
+      existenciasProducto: null,
+    };
+  },
+  methods: {
+    async fncObtenerProductos() {
       try {
         const token = sessionStorage.getItem('token');
         if (!token) throw new Error('No se encontró un token válido');
@@ -77,24 +101,20 @@ export default {
         const response = await axios.get('http://localhost:8000/api/admin/productos', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        productos.value = response.data.productos;
-        isLoading.value = false;
+        this.productos = response.data.productos;
+        this.isLoading = false;
       } catch (err) {
         console.error('Error al obtener productos:', err);
-        error.value = 'Ha ocurrido un error al cargar los productos';
-        isLoading.value = false;
+        this.error = 'Ha ocurrido un error al cargar los productos';
+        this.isLoading = false;
       }
-    };
-
-    onMounted(() => {
-      fncObtenerProductos();
-    });
-
-    return {
-      productos,
-      isLoading,
-      error,
-    };
+    },
+    closeDialog() {
+      this.dialogInsertar = false;
+    },
+  },
+  mounted() {
+    this.fncObtenerProductos();
   },
 };
 </script>
