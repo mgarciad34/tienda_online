@@ -3,7 +3,7 @@
       <v-app>
         <v-app-bar app>
           <v-toolbar flat style="background-color:#FFB300;">
-            <v-toolbar-title>Administrador Tienda Online</v-toolbar-title>
+            <v-toolbar-title style="color: black;">Administrador Tienda Online</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-menu bottom left>
               <template v-slot:activator="{ props }">
@@ -134,4 +134,10 @@
     }
   }
   </script>
+
+<style scoped>
+  .app{
+    background-color: black;
+  }
+</style>
   
