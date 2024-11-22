@@ -34,11 +34,18 @@
               </v-col>
             </v-row>
   
-            <template v-if="$route.path.includes('/admin/dashboard')">
+            <template v-if="$route.path === '/admin/dashboard'">
               <OpcionesComponent v-if="$route.path.includes('/admin/dashboard')" id="OpcionesComponent" style="display: block;" />
+            </template>
+
+            <template v-if="$route.path === '/admin/dashboard/categorias'">
               <CategoriaComponent v-if="$route.path.includes('/admin/dashboard/categorias')" id="CategoriaComponent" style="display: block;" />
+            </template>
+
+            <template v-if="$route.path === '/admin/dashboard/productos'">
               <ProductosComponent v-if="$route.path.includes('/admin/dashboard/productos')" id="ProductosComponent" style="display: block" />
             </template>
+
           </v-container>
         </v-main>
       </v-app>
