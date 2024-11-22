@@ -1,5 +1,6 @@
 <template>
   <v-container class="productos-container" fluid>
+    
     <v-btn color="green" @click="dialogInsertar = true">
       <v-icon>mdi-plus</v-icon> Crear nuevo producto
     </v-btn>

@@ -34,7 +34,6 @@
               </v-col>
             </v-row>
   
-            <!-- Usando una propiedad computada para determinar qué componente renderizar -->
             <template v-if="$route.path.includes('/admin/dashboard')">
               <OpcionesComponent v-if="$route.path.includes('/admin/dashboard')" id="OpcionesComponent" style="display: block;" />
               <CategoriaComponent v-if="$route.path.includes('/admin/dashboard/categorias')" id="CategoriaComponent" style="display: block;" />
