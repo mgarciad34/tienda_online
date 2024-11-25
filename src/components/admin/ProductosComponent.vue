@@ -46,11 +46,7 @@
             Existencias: {{ producto.existencias }}
           </v-card-text>
 
-          <!-- Botones de acción -->
           <v-row>
-            <v-col cols="4">
-              <v-btn color="blue" block><v-icon>mdi-eye</v-icon></v-btn>
-            </v-col>
             <v-col cols="4">
               <v-btn color="yellow" block><v-icon>mdi-update</v-icon></v-btn>
             </v-col>
