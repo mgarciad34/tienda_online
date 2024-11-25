@@ -3,6 +3,9 @@ import HomeView from '../views/HomeView.vue'
 import AdminDashboard from '../views/AdminDashboard.vue'
 import UsuarioDashboard from '../views/UsuarioDashboard.vue'
 import RegistroView from '../views/RegistroView.vue'
+import RecuperarView from '@/views/RecuperarView.vue'
+import AdminCategorias from '@/views/admin/AdminCategorias.vue'
+import AdminProductos from '@/views/admin/AdminProductos.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,6 +16,11 @@ const router = createRouter({
       component: HomeView
     },
     {
+      path: '/recuperar',
+      name: 'recuperar',
+      component: RecuperarView
+    },
+    {
       path: '/registro',
       name: 'registro',
       component: RegistroView
@@ -21,6 +29,16 @@ const router = createRouter({
       path: '/admin/dashboard',
       name: 'adminDashboard',
       component: AdminDashboard
+    },
+    {
+      path: '/admin/dashboard/categorias',
+      name: 'adminCategorias',
+      component: AdminCategorias
+    },
+    {
+      path: '/admin/dashboard/productos',
+      name: 'adminProductos',
+      component: AdminProductos
     },
     {
       path: '/usuario/dashboard',

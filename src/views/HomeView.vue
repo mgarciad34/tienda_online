@@ -11,8 +11,8 @@
         </div>
         <button type="submit">Iniciar sesión</button>
         <div class="login-options">
-          <span>¿Olvidaste tu contraseña?</span>
-          <span>Aun no tienes cuenta? <router-link to="/registro">Regístrate</router-link></span>
+          <span><router-link to="/recuperar">¿Olvidaste tu contraseña?, Recuperala</router-link></span>
+          <span><router-link to="/registro">Aun no tienes cuenta? Regístrate</router-link></span>
         </div>
       </form>
     </div>
