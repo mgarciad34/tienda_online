@@ -1,6 +1,5 @@
 <template>
   <v-container fluid>
-    <!-- Botón para crear un nuevo producto -->
     <v-btn color="green" @click="dialogInsertar = true" class="mb-4">
       <v-icon>mdi-plus</v-icon> Crear nuevo producto
     </v-btn>
@@ -20,7 +19,6 @@
       </v-col>
 
       <v-col v-else v-for="producto in productos" :key="producto.id" cols="12" sm="6" md="4" lg="3">
-        <!-- Tarjeta del producto -->
         <v-card class="producto-card" elevation="4" hover>
           <v-carousel :show-arrows="false" height="200px">
             <v-carousel-item v-for="(img, index) in [producto.img1, producto.img2, producto.img3]" :key="index">
@@ -216,7 +214,6 @@ export default {
 
 
 <style scoped>
-/* Mantén el estilo como antes */
 .productos-container {
   max-width: 100%;
   padding: 20px;
