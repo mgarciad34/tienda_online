@@ -14,8 +14,7 @@
                     <input type="password" id="password" v-model="password" required placeholder="Contraseña">
                 </div>
                 <div class="form-group">
-                    <input type="password" id="r-password" v-model="rPassword" required
-                        placeholder="Repetir contraseña">
+                    <input type="password" id="r-password" v-model="rPassword" required placeholder="Repetir contraseña">
                 </div>
                 <button type="submit">Registrar usuario</button>
                 <div class="login-options">
@@ -32,30 +31,41 @@ import axios from 'axios'
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-const nombre = ref('')
-const email = ref('')
-const password = ref('')
-const rPassword = ref('')
+const nombre = ref('');
+const email = ref('');
+const password = ref('');
+const rPassword = ref('');
 
-const handleRegistro = () => {
-    const nombre = document.getElementById('nombre').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+const handleRegistro = async () => {
+    try {
+        if (password.value !== rPassword.value) {
+            throw new Error('Las contraseñas no coinciden');
+        }
 
-    axios.post('http://localhost:8000/api/registro', {
-        nombre: nombre,
-        email: email,
-        contrasena: password,
-        rol: 'Usuario'
-    })
-        .then(response => {
+        const data = {
+            nombre: nombre.value,
+            email: email.value,
+            contrasena: password.value,
+            rol: 'Usuario'
+        };
+
+        const response = await axios.post('http://localhost:8000/api/registro', data);
+
+        if (response.status === 200) {
             router.push('/');
-        })
-        .catch(error => {
-            console.error('Error:', error.response);
-            const errorMessage = error.response.data ? error.response.data.message : "Ocurrió un error al registrar.";
+        } else {
+            throw new Error('El registro falló. Verifica los datos ingresados.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        
+        if (error.response && error.response.status === 422) {
+            const errorMessage = error.response.data?.message || 'Ocurrió un error de validación.';
             alert(errorMessage);
-        });
+        } else {
+            alert(error.message || 'Ocurrió un error al registrar.');
+        }
+    }
 };
 </script>
 
