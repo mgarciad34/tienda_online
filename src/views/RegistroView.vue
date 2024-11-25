@@ -3,22 +3,21 @@
         <div class="registro-card">
             <h2>Registro de usuario</h2>
             <form @submit.prevent="handleRegistro()">
-                <!-- Formulario contenido aquí -->
                 <div class="form-group">
-                    <input type="text" id="nombre" v-model="nombre" required placeholder="Nombre">
+                    <input type="text" id="nombre" v-model="nombre" required placeholder="Nombre" />
                 </div>
                 <div class="form-group">
-                    <input type="email" id="email" v-model="email" required placeholder="Correo electrónico o teléfono">
+                    <input type="email" id="email" v-model="email" required placeholder="Correo electrónico" />
                 </div>
                 <div class="form-group">
-                    <input type="password" id="password" v-model="password" required placeholder="Contraseña">
+                    <input type="password" id="password" v-model="password" required placeholder="Contraseña" />
                 </div>
                 <div class="form-group">
-                    <input type="password" id="r-password" v-model="rPassword" required placeholder="Repetir contraseña">
+                    <input type="password" id="r-password" v-model="rPassword" required placeholder="Repetir contraseña" />
                 </div>
                 <button type="submit">Registrar usuario</button>
                 <div class="login-options">
-                    <span>Ya tienes cuenta? <router-link to="/">Iniciar Sesion</router-link></span>
+                    <span>¿Ya tienes cuenta? <router-link to="/">Iniciar sesión</router-link></span>
                 </div>
             </form>
         </div>
@@ -26,8 +25,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import axios from 'axios'
+import { ref } from 'vue';
+import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -38,45 +37,57 @@ const rPassword = ref('');
 
 const handleRegistro = async () => {
     try {
+        // Validación previa en el frontend
+        if (!nombre.value || !email.value || !password.value || !rPassword.value) {
+            throw new Error('Todos los campos son obligatorios.');
+        }
+        if (password.value.length < 8) {
+            throw new Error('La contraseña debe tener al menos 8 caracteres.');
+        }
         if (password.value !== rPassword.value) {
-            throw new Error('Las contraseñas no coinciden');
+            throw new Error('Las contraseñas no coinciden.');
         }
 
+        // Datos para el registro
         const data = {
             nombre: nombre.value,
             email: email.value,
             contrasena: password.value,
-            rol: 'Usuario'
+            rol: 'Usuario',
         };
 
+        // Petición al backend
         const response = await axios.post('http://localhost:8000/api/registro', data);
 
-        if (response.status === 200) {
+        // Comprobar si la respuesta es exitosa
+        if (response.status === 201) {
+            alert('Usuario registrado exitosamente. Redirigiendo...');
             router.push('/');
         } else {
-            throw new Error('El registro falló. Verifica los datos ingresados.');
+            throw new Error('El registro falló. Intenta nuevamente.');
         }
     } catch (error) {
+        // Manejo de errores
         console.error('Error:', error);
-        
-        if (error.response && error.response.status === 422) {
-            const errorMessage = error.response.data?.message || 'Ocurrió un error de validación.';
-            alert(errorMessage);
+
+        if (error.response && error.response.data) {
+            const errorMessage = error.response.data.error || error.response.data.message || 'Ocurrió un error.';
+            alert(`Error del servidor: ${errorMessage}`);
         } else {
-            alert(error.message || 'Ocurrió un error al registrar.');
+            alert(error.message || 'Error inesperado al intentar registrar.');
         }
     }
 };
 </script>
 
 <style scoped>
+/* Mantengo el mismo CSS, ya que está bien diseñado */
 body {
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
     min-height: 100vh;
-
 }
 
 .registro-container {
