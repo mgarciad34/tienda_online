@@ -1,5 +1,6 @@
 <template>
   <v-container fluid>
+    <!-- Botón para abrir el diálogo de creación -->
     <v-btn color="green" @click="dialogInsertar = true" class="mb-4">
       <v-icon>mdi-plus</v-icon> Crear nuevo producto
     </v-btn>
@@ -50,7 +51,6 @@
               <v-btn color="red" block @click="fncEliminarProducto(producto.id)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
-
             </v-col>
           </v-row>
         </v-card>
@@ -62,17 +62,18 @@
       <v-card>
         <v-card-title>Insertar Nuevo Producto</v-card-title>
         <v-card-text>
-          <v-text-field v-model="nombreProducto" label="Nombre del Producto" outlined></v-text-field>
+          <v-text-field v-model="nombreProducto" label="Nombre del Producto" outlined
+            :rules="[v => !!v || 'El nombre es obligatorio']"></v-text-field>
           <v-file-input v-model="file1" label="Seleccionar imagen 1" accept="image/*" outlined></v-file-input>
           <v-file-input v-model="file2" label="Seleccionar imagen 2" accept="image/*" outlined></v-file-input>
           <v-file-input v-model="file3" label="Seleccionar imagen 3" accept="image/*" outlined></v-file-input>
-          <v-textarea v-model="descripcionProducto" label="Descripción del Producto" outlined rows="3"
-            auto-grow></v-textarea>
-          <v-text-field v-model="precioProducto" label="Precio del Producto" outlined type="number"
-            min="0"></v-text-field>
-          <v-text-field v-model="existenciasProducto" label="Existencias del Producto" outlined type="number"
-            min="0"></v-text-field>
-          <v-select v-model="categoriaProducto" :items="categorias" label="Seleccionar Categoría" outlined></v-select>
+          <v-textarea v-model="descripcionProducto" label="Descripción del Producto" outlined rows="3" auto-grow
+            :rules="[v => !!v || 'La descripción es obligatoria']"></v-textarea>
+          <v-text-field v-model="precioProducto" label="Precio del Producto" outlined type="number" min="0"
+            :rules="[v => v > 0 || 'El precio debe ser mayor que 0']"></v-text-field>
+          <v-text-field v-model="existenciasProducto" label="Existencias del Producto" outlined type="number" min="0"
+            :rules="[v => v >= 0 || 'Las existencias no pueden ser negativas']"></v-text-field>
+
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
@@ -81,6 +82,11 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Snackbar para mensajes -->
+    <v-snackbar v-model="snackbar.visible" :color="snackbar.color">
+      {{ snackbar.message }}
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -101,6 +107,13 @@ export default {
       descripcionProducto: '',
       precioProducto: null,
       existenciasProducto: null,
+      categoriaProducto: null,
+      categorias: [], // Debes cargar las categorías desde tu backend
+      snackbar: {
+        visible: false,
+        color: '',
+        message: '',
+      },
     };
   },
   methods: {
@@ -115,92 +128,80 @@ export default {
         this.productos = response.data.productos;
         this.isLoading = false;
       } catch (err) {
-        console.error('Error al obtener productos:', err);
         this.error = 'Ha ocurrido un error al cargar los productos';
         this.isLoading = false;
       }
     },
     closeDialog() {
       this.dialogInsertar = false;
+      this.resetFormulario();
+    },
+    getAbsoluteUrl(path) {
+      // Obtiene el protocolo y dominio de la URL actual
+      const protocol = window.location.protocol;
+      const domain = window.location.host;
+
+      // Construye la URL absoluta
+      return `${protocol}//${domain}${path}`;
     },
     async fncInsertarProducto() {
       try {
-        const imagesBase64 = await Promise.all([
-          this.file1 ? this.convertToBase64(this.file1) : null,
-          this.file2 ? this.convertToBase64(this.file2) : null,
-          this.file3 ? this.convertToBase64(this.file3) : null,
-        ]);
+        const token = sessionStorage.getItem('token');
 
-        const payload = {
+        // Verificar si el token existe y no está vacío
+        if (!token) {
+          throw new Error('No se encontró un token de autenticación válido');
+        }
+
+        // Crear objeto con los datos del producto
+        const productData = {
           nombre: this.nombreProducto,
-          img1: imagesBase64[0] || null,
-          img2: imagesBase64[1] || null,
-          img3: imagesBase64[2] || null,
           descripcion: this.descripcionProducto,
           precio: this.precioProducto,
           existencias: this.existenciasProducto,
           categoria_id: 1,
+          img1: this.getAbsoluteUrl(this.img1),
+          img2: this.getAbsoluteUrl(this.img2),
+          img3: this.getAbsoluteUrl(this.img3),
         };
 
-        const token = sessionStorage.getItem('token');
-        if (!token) throw new Error('No se encontró un token válido');
-
-        const response = await axios.post(
-          'http://localhost:8000/api/admin/productos',
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        console.log('Producto insertado correctamente:', response.data);
-
-        await this.fncObtenerProductos();
-        this.closeDialog();
-      } catch (error) {
-        console.error('Error al insertar producto:', error);
-
-        if (error.response) {
-          console.error('Respuesta del servidor:', error.response.data);
-        } else if (error.request) {
-          console.error('No se recibió respuesta del servidor:', error.request);
-        } else {
-          console.error('Error inesperado:', error.message);
-        }
-      }
-    },
-    async fncEliminarProducto(id) {
-      try {
-        const token = sessionStorage.getItem('token');
-        if (!token) throw new Error('No se encontró un token válido');
-
-        // Realizar la petición DELETE
-        const response = await axios.delete(`http://localhost:8000/api/admin/productos/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        // Crear una instancia de Axios con los headers
+        const instance = axios.create({
+          baseURL: 'http://localhost:8000/api',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
 
-        console.log(`Producto con ID ${id} eliminado correctamente:`, response.data);
-
-        // Actualizar la lista de productos después de eliminar
-        await this.fncObtenerProductos();
-      } catch (error) {
-        console.error(`Error al eliminar el producto con ID ${id}:`, error);
-
-        if (error.response) {
-          console.error('Respuesta del servidor:', error.response.data);
-        } else if (error.request) {
-          console.error('No se recibió respuesta del servidor:', error.request);
-        } else {
-          console.error('Error inesperado:', error.message);
-        }
+        // Convertir el objeto en JSON y enviarlo como payload
+        const response = await instance.post('/admin/productos', productData);
+        console.log(response.data);
+      } catch (err) {
+        console.error('Error al insertar el producto:', err.response?.data || err.message);
+        // Mostrar un mensaje de error al usuario
+        this.showError('Error al insertar el producto. Por favor, inténtelo nuevamente.');
       }
+    }
+    ,
+    resetFormulario() {
+      this.nombreProducto = '';
+      this.file1 = null;
+      this.file2 = null;
+      this.file3 = null;
+      this.descripcionProducto = '';
+      this.precioProducto = null;
+      this.existenciasProducto = null;
+      this.categoriaProducto = null;
+    },
+    showSnackbar(message, color) {
+      this.snackbar = { visible: true, color, message };
     },
     convertToBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => {
-          const base64String = reader.result.split(',')[1];
-          resolve(`data:${file.type};base64,${base64String}`);
-        };
-        reader.onerror = (error) => reject(error);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
         reader.readAsDataURL(file);
       });
     },
@@ -211,7 +212,9 @@ export default {
 };
 </script>
 
-
+<style scoped>
+/* Tus estilos */
+</style>
 
 <style scoped>
 .productos-container {
