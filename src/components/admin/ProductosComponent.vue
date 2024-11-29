@@ -148,24 +148,45 @@ export default {
       try {
         const token = sessionStorage.getItem('token');
 
-        // Verificar si el token existe y no está vacío
         if (!token) {
           throw new Error('No se encontró un token de autenticación válido');
         }
 
-        // Crear objeto con los datos del producto
         const productData = {
           nombre: this.nombreProducto,
           descripcion: this.descripcionProducto,
           precio: this.precioProducto,
           existencias: this.existenciasProducto,
           categoria_id: 1,
-          img1: this.getAbsoluteUrl(this.img1),
-          img2: this.getAbsoluteUrl(this.img2),
-          img3: this.getAbsoluteUrl(this.img3),
         };
 
-        // Crear una instancia de Axios con los headers
+        // Función auxiliar para convertir una imagen a base64
+        const convertToBase64 = (file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        };
+
+        let img1Base64;
+        let img2Base64;
+        let img3Base64;
+
+        if (this.file1) {
+          img1Base64 = await convertToBase64(this.file1);
+          productData.img1 = img1Base64;
+        }
+        if (this.file2) {
+          img2Base64 = await convertToBase64(this.file2);
+          productData.img2 = img2Base64;
+        }
+        if (this.file3) {
+          img3Base64 = await convertToBase64(this.file3);
+          productData.img3 = img3Base64;
+        }       
+
         const instance = axios.create({
           baseURL: 'http://localhost:8000/api',
           headers: {
@@ -174,16 +195,17 @@ export default {
           }
         });
 
-        // Convertir el objeto en JSON y enviarlo como payload
         const response = await instance.post('/admin/productos', productData);
         console.log(response.data);
+        this.resetFormulario();
+        this.closeDialog();
+        this.fncObtenerProductos();
       } catch (err) {
         console.error('Error al insertar el producto:', err.response?.data || err.message);
         // Mostrar un mensaje de error al usuario
         this.showError('Error al insertar el producto. Por favor, inténtelo nuevamente.');
       }
-    }
-    ,
+    },
     resetFormulario() {
       this.nombreProducto = '';
       this.file1 = null;
