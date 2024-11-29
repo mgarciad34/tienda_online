@@ -40,7 +40,7 @@
           </v-card-text>
 
           <v-card-text class="producto-precio">
-            {{ producto.precio.toFixed(2) }}€
+            {{ producto.precio.toFixed(2) }} €
           </v-card-text>
 
           <v-row>
@@ -48,7 +48,7 @@
               <v-btn color="yellow" block><v-icon>mdi-update</v-icon></v-btn>
             </v-col>
             <v-col cols="4">
-              <v-btn color="red" block @click="fncEliminarProducto(producto.id)">
+              <v-btn color="red" @click="fncEliminarProducto(producto.id)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </v-col>
@@ -74,6 +74,10 @@
           <v-text-field v-model="existenciasProducto" label="Existencias del Producto" outlined type="number" min="0"
             :rules="[v => v >= 0 || 'Las existencias no pueden ser negativas']"></v-text-field>
 
+          <!-- Selector de categoría -->
+          <v-select v-model="categoriaProducto" :items="categorias" item-text="nombre" item-value="id" label="Categoría"
+            outlined :rules="[v => !!v || 'Debe seleccionar una categoría']">
+          </v-select>
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
@@ -89,6 +93,7 @@
     </v-snackbar>
   </v-container>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -107,8 +112,8 @@ export default {
       descripcionProducto: '',
       precioProducto: null,
       existenciasProducto: null,
-      categoriaProducto: null,
-      categorias: [], // Debes cargar las categorías desde tu backend
+      categoriaProducto: null, 
+      categorias: [], 
       snackbar: {
         visible: false,
         color: '',
@@ -125,6 +130,7 @@ export default {
         const response = await axios.get('http://localhost:8000/api/admin/productos', {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         this.productos = response.data.productos;
         this.isLoading = false;
       } catch (err) {
@@ -132,35 +138,38 @@ export default {
         this.isLoading = false;
       }
     },
+    async fncObtenerCategorias() {
+      try {
+        const token = sessionStorage.getItem('token');
+        if (!token) throw new Error('No se encontró un token válido');
+
+        const response = await axios.get('http://localhost:8000/api/admin/categorias', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        this.categorias = response.data.categorias; // Ajusta esto según la respuesta del backend
+      } catch (err) {
+        console.error('Error al cargar categorías:', err.response?.data || err.message);
+        this.showSnackbar('Error al cargar categorías. Por favor, inténtelo nuevamente.', 'error');
+      }
+    },
     closeDialog() {
       this.dialogInsertar = false;
       this.resetFormulario();
     },
-    getAbsoluteUrl(path) {
-      // Obtiene el protocolo y dominio de la URL actual
-      const protocol = window.location.protocol;
-      const domain = window.location.host;
-
-      // Construye la URL absoluta
-      return `${protocol}//${domain}${path}`;
-    },
     async fncInsertarProducto() {
       try {
         const token = sessionStorage.getItem('token');
-
-        if (!token) {
-          throw new Error('No se encontró un token de autenticación válido');
-        }
+        if (!token) throw new Error('No se encontró un token de autenticación válido');
 
         const productData = {
           nombre: this.nombreProducto,
           descripcion: this.descripcionProducto,
           precio: this.precioProducto,
           existencias: this.existenciasProducto,
-          categoria_id: 1,
+          categoria_id: this.categoriaProducto, // Enviar la categoría seleccionada
         };
 
-        // Función auxiliar para convertir una imagen a base64
         const convertToBase64 = (file) => {
           return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -170,9 +179,7 @@ export default {
           });
         };
 
-        let img1Base64;
-        let img2Base64;
-        let img3Base64;
+        let img1Base64, img2Base64, img3Base64;
 
         if (this.file1) {
           img1Base64 = await convertToBase64(this.file1);
@@ -185,25 +192,44 @@ export default {
         if (this.file3) {
           img3Base64 = await convertToBase64(this.file3);
           productData.img3 = img3Base64;
-        }       
+        }
 
         const instance = axios.create({
           baseURL: 'http://localhost:8000/api',
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+          },
         });
 
         const response = await instance.post('/admin/productos', productData);
         console.log(response.data);
+
         this.resetFormulario();
         this.closeDialog();
         this.fncObtenerProductos();
       } catch (err) {
         console.error('Error al insertar el producto:', err.response?.data || err.message);
-        // Mostrar un mensaje de error al usuario
-        this.showError('Error al insertar el producto. Por favor, inténtelo nuevamente.');
+        this.showSnackbar('Error al insertar el producto. Por favor, inténtelo nuevamente.', 'error');
+      }
+    },
+    async fncEliminarProducto(id) {
+      try {
+        const token = sessionStorage.getItem('token');
+        if (!token) throw new Error('No se encontró un token válido');
+
+        await axios.delete(`/admin/productos/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // Actualizar el estado local
+        this.productos = this.productos.filter((producto) => producto.id !== id);
+
+        // Mostrar mensaje de éxito
+        this.showSnackbar('El producto ha sido eliminado con éxito', 'success');
+      } catch (error) {
+        console.error('Error al eliminar el producto:', error.response?.data || error.message);
+        this.showSnackbar('Ha ocurrido un error al eliminar el producto. Por favor, inténtelo nuevamente.', 'error');
       }
     },
     resetFormulario() {
@@ -219,30 +245,21 @@ export default {
     showSnackbar(message, color) {
       this.snackbar = { visible: true, color, message };
     },
-    convertToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    },
   },
   mounted() {
     this.fncObtenerProductos();
+    this.fncObtenerCategorias(); // Cargar las categorías al montar el componente
   },
 };
 </script>
 
-<style scoped>
-/* Tus estilos */
-</style>
 
 <style scoped>
 .productos-container {
   max-width: 100%;
   padding: 20px;
 }
+
 
 .producto-card {
   padding: 20px;
@@ -287,4 +304,36 @@ export default {
 .v-btn:hover {
   background-color: #4CAF50;
 }
+
+.v-btn.red:hover {
+  background-color: #D32F2F;
+}
+
+.v-dialog .v-card {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.v-dialog .v-text-field, .v-dialog .v-textarea, .v-dialog .v-file-input {
+  margin-bottom: 20px;
+}
+
+.v-snackbar {
+  border-radius: 8px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.v-snackbar.v-snackbar--visible {
+  transition: all 0.5s ease;
+}
+
+.v-icon {
+  transition: transform 0.2s ease-in-out;
+}
+
+.v-icon:hover {
+  transform: scale(1.2);
+}
 </style>
+
