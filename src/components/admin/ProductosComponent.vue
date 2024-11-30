@@ -5,6 +5,7 @@
       <v-icon>mdi-plus</v-icon> Crear nuevo producto
     </v-btn>
 
+
     <!-- Cargando productos o mostrando productos -->
     <v-row>
       <v-col cols="12" v-if="isLoading">
@@ -31,8 +32,6 @@
 
           <v-card-subtitle class="producto-descripcion">
             Existencias: {{ producto.existencias }}
-            <br>
-            Categoría: {{ getNombreCategoria(producto.categoria_id) }}
           </v-card-subtitle>
 
           <v-card-text class="producto-descripcion">
@@ -51,7 +50,7 @@
 
             </v-col>
             <v-col cols="4">
-              <v-btn color="red" @click="fncEliminarProducto()">
+              <v-btn color="red" @click="fncEliminarProducto(producto.id)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </v-col>
@@ -258,7 +257,7 @@ export default {
     },
     getNombreCategoria(id) {
       const categoria = this.categorias.find((cat) => cat.id === id);
-      return categoria ? categoria.nombre : 'Categoría desconocida';
+      return categoria ? categoria.nombre : 'Sin categoría';
     },
     closeDialog() {
       this.dialogInsertar = false;
@@ -342,7 +341,9 @@ export default {
         if (idA) productData.id = idA;
         if (nombreAProducto) productData.nombre = nombreAProducto;
         if (descripcionAProducto) productData.descripcion = descripcionAProducto;
-        if (precioAProducto) productData.precio = parseFloat(precioAProducto);
+        if (precioAProducto > 0) {
+          productData.precio = parseFloat(precioAProducto);
+        }
         if (existenciasAProducto) productData.existencias = parseInt(existenciasAProducto);
 
         // Convertir archivos a base64 si están presentes
