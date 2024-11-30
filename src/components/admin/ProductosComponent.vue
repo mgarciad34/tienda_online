@@ -59,31 +59,45 @@
 
     <!-- Modal Insertar Producto -->
     <v-dialog v-model="dialogInsertar" width="500" @click:outside="closeDialog">
-      <v-card>
-        <v-card-title>Insertar Nuevo Producto</v-card-title>
-        <v-card-text>
-          <v-text-field v-model="nombreProducto" label="Nombre del Producto" outlined
-            :rules="[v => !!v || 'El nombre es obligatorio']"></v-text-field>
-          <v-file-input v-model="file1" label="Seleccionar imagen 1" accept="image/*" outlined></v-file-input>
-          <v-file-input v-model="file2" label="Seleccionar imagen 2" accept="image/*" outlined></v-file-input>
-          <v-file-input v-model="file3" label="Seleccionar imagen 3" accept="image/*" outlined></v-file-input>
-          <v-textarea v-model="descripcionProducto" label="Descripción del Producto" outlined rows="3" auto-grow
-            :rules="[v => !!v || 'La descripción es obligatoria']"></v-textarea>
-          <v-text-field v-model="precioProducto" label="Precio del Producto" outlined type="number" min="0"
-            :rules="[v => v > 0 || 'El precio debe ser mayor que 0']"></v-text-field>
-          <v-text-field v-model="existenciasProducto" label="Existencias del Producto" outlined type="number" min="0"
-            :rules="[v => v >= 0 || 'Las existencias no pueden ser negativas']"></v-text-field>
+      <v-card class="modal-container">
+        <div class="modal-header">
+          <h2>Insertar Nuevo Producto</h2>
+          <button @click="closeDialog" class="btn-close">&times;</button>
+        </div>
 
-          <!-- Selector de categoría -->
-          <v-select v-model="categoriaProducto" :items="categorias" item-text="nombre" item-value="id" label="Categoría"
-            outlined :rules="[v => !!v || 'Debe seleccionar una categoría']">
-          </v-select>
-        </v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions>
-          <v-btn @click="closeDialog">Cerrar</v-btn>
-          <v-btn @click="fncInsertarProducto">Insertar</v-btn>
-        </v-card-actions>
+        <div class="modal-body">
+          <form class="product-form">
+            <div class="form-group">
+              <v-text-field v-model="nombreProducto" label="Escribe el nombre del producto" required />
+              <div class="file-inputs">
+                <v-file-input v-model="file1" label="Seleccionar imagen 1" accept="image/*" outlined></v-file-input>
+                <v-file-input v-model="file2" label="Seleccionar imagen 2" accept="image/*" outlined></v-file-input>
+                <v-file-input v-model="file3" label="Seleccionar imagen 3" accept="image/*" outlined></v-file-input>
+              </div>
+
+              <v-textarea v-model="descripcionProducto" label="Escribe la descripción del producto" required />
+              <v-text-field v-model="precioProducto" type="number" label="Escribe el precio del producto" min="0"
+                required />
+
+              <v-text-field v-model="existenciasProducto" type="number" label="Escribe las existencias del producto"
+                min="0" required />
+            </div>
+
+            <div class="custom-select">
+              <select id="categoriaProducto" name="categoriaProducto" v-model="categoriaProducto" required>
+                <option value="" disabled selected>Selecciona una categoría</option>
+                <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">
+                  {{ categoria.nombre }}
+                </option>
+              </select>
+            </div>
+
+
+          </form>
+        </div>
+
+        <v-btn @click="closeDialog">Cerrar</v-btn>
+        <v-btn @click="fncInsertarProducto">Insertar</v-btn>
       </v-card>
     </v-dialog>
 
@@ -93,7 +107,6 @@
     </v-snackbar>
   </v-container>
 </template>
-
 
 <script>
 import axios from 'axios';
@@ -112,8 +125,8 @@ export default {
       descripcionProducto: '',
       precioProducto: null,
       existenciasProducto: null,
-      categoriaProducto: null, 
-      categorias: [], 
+      categoriaProducto: null,
+      categorias: [],
       snackbar: {
         visible: false,
         color: '',
@@ -147,7 +160,9 @@ export default {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        this.categorias = response.data.categorias; // Ajusta esto según la respuesta del backend
+        this.categorias = response.data.categorias; // Asegúrate de que cada objeto tenga las propiedades 'id' y 'nombre'
+        console.log(this.categorias); // Verifica la estructura de los objetos
+
       } catch (err) {
         console.error('Error al cargar categorías:', err.response?.data || err.message);
         this.showSnackbar('Error al cargar categorías. Por favor, inténtelo nuevamente.', 'error');
@@ -169,6 +184,7 @@ export default {
           existencias: this.existenciasProducto,
           categoria_id: this.categoriaProducto, // Enviar la categoría seleccionada
         };
+
 
         const convertToBase64 = (file) => {
           return new Promise((resolve, reject) => {
@@ -194,6 +210,7 @@ export default {
           productData.img3 = img3Base64;
         }
 
+        console.log(productData)
         const instance = axios.create({
           baseURL: 'http://localhost:8000/api',
           headers: {
@@ -218,20 +235,28 @@ export default {
         const token = sessionStorage.getItem('token');
         if (!token) throw new Error('No se encontró un token válido');
 
-        await axios.delete(`/admin/productos/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const instance = axios.create({
+          baseURL: 'http://localhost:8000/api',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         });
 
-        // Actualizar el estado local
+        console.log(`Intentando eliminar el producto con ID: ${id}`);
+        const response = await instance.delete(`/admin/productos/${id}`);
+        console.log('Respuesta del servidor:', response.data);
         this.productos = this.productos.filter((producto) => producto.id !== id);
-
-        // Mostrar mensaje de éxito
         this.showSnackbar('El producto ha sido eliminado con éxito', 'success');
       } catch (error) {
         console.error('Error al eliminar el producto:', error.response?.data || error.message);
-        this.showSnackbar('Ha ocurrido un error al eliminar el producto. Por favor, inténtelo nuevamente.', 'error');
+        this.showSnackbar(
+          error.response?.data?.message || 'Ha ocurrido un error al eliminar el producto',
+          'error'
+        );
       }
     },
+
     resetFormulario() {
       this.nombreProducto = '';
       this.file1 = null;
@@ -314,7 +339,9 @@ export default {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-.v-dialog .v-text-field, .v-dialog .v-textarea, .v-dialog .v-file-input {
+.v-dialog .v-text-field,
+.v-dialog .v-textarea,
+.v-dialog .v-file-input {
   margin-bottom: 20px;
 }
 
@@ -335,5 +362,109 @@ export default {
 .v-icon:hover {
   transform: scale(1.2);
 }
-</style>
 
+.modal-header {
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.modal-body {
+  padding: 20px 10px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.form-input {
+  margin-bottom: 10px;
+}
+
+.form-select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #4AAE9B;
+}
+
+.btn-secondary {
+  background-color: #f8f9fa;
+  color: #6b7280;
+  border: 1px solid #d1d5e8;
+}
+
+.btn-primary {
+  background-color: #4AAE9B;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.custom-select {
+  position: relative;
+  width: 100%;
+}
+
+.custom-select select {
+  appearance: none;
+  width: 100%;
+  padding: 10px 20px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  color: #333;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.custom-select select::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-select select {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.custom-select::after {
+  content: '\25BC';
+  /* Triangular arrow */
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #333;
+}
+
+.custom-select:hover {
+  background-color: #e0e0e0;
+}
+
+.custom-select select:focus {
+  outline: none;
+  border-color: #000000;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+</style>
