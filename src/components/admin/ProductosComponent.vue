@@ -32,7 +32,7 @@
           <v-card-subtitle class="producto-descripcion">
             Existencias: {{ producto.existencias }}
             <br>
-            Categoría: {{ producto.categoria_id }}
+            Categoría: {{ getNombreCategoria(producto.categoria_id) }}
           </v-card-subtitle>
 
           <v-card-text class="producto-descripcion">
@@ -45,10 +45,13 @@
 
           <v-row>
             <v-col cols="4">
-              <v-btn color="yellow" block><v-icon>mdi-update</v-icon></v-btn>
+              <v-btn color="blue" @click="dialogActualizar = true; fncCargarDatos(producto.id)">
+                <v-icon>mdi-update</v-icon>
+              </v-btn>
+
             </v-col>
             <v-col cols="4">
-              <v-btn color="red" @click="fncEliminarProducto(producto.id)">
+              <v-btn color="red" @click="fncEliminarProducto()">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </v-col>
@@ -57,7 +60,7 @@
       </v-col>
     </v-row>
 
-    <!-- Modal Insertar Producto -->
+    <!--Dialog insertar-->
     <v-dialog v-model="dialogInsertar" width="500" @click:outside="closeDialog">
       <v-card class="modal-container">
         <div class="modal-header">
@@ -91,8 +94,6 @@
                 </option>
               </select>
             </div>
-
-
           </form>
         </div>
 
@@ -101,7 +102,60 @@
       </v-card>
     </v-dialog>
 
-    <!-- Snackbar para mensajes -->
+    <!--Dialog Actualizar-->
+    <v-dialog v-model="dialogActualizar" width="500" @click:outside="this.dialogActualizar = false;">
+      <v-card class="modal-container">
+        <div class="modal-header">
+          <h2>Actualizar Producto</h2>
+          <button @click="this.dialogActualizar= false;" class="btn-close">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <form class="product-form">
+            <div class="form-group">
+              <!-- Nombre -->
+              <v-text-field v-model="nombreAProducto" label="Nombre del producto" required />
+
+              <!-- Imágenes -->
+              <div class="file-inputs">
+                <v-file-input v-model="fileA1" label="Seleccionar imagen 1 (Opcional)" accept="image/*" outlined />
+                <v-file-input v-model="fileA2" label="Seleccionar imagen 2 (Opcional)" accept="image/*" outlined />
+                <v-file-input v-model="fileA3" label="Seleccionar imagen 3 (Opcional)" accept="image/*" outlined />
+              </div>
+
+              <!-- Descripción -->
+              <v-textarea v-model="descripcionAProducto" label="Descripción del producto" required />
+
+              <!-- Precio -->
+              <v-text-field v-model="precioAProducto" type="number" label="Precio del producto" min="0" required />
+
+              <!-- Existencias -->
+              <v-text-field v-model="existenciasAProducto" type="number" label="Existencias del producto" min="0"
+                required />
+            </div>
+
+            <!-- Selector de Categoría -->
+            <div class="custom-select">
+              <select id="categoriaAProducto" name="categoriaAProducto" v-model="categoriaAProducto" required>
+                <option value="" disabled selected>
+                  Selecciona una categoría
+                </option>
+                <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">
+                  {{ categoria.nombre }}
+                </option>
+              </select>
+            </div>
+          </form>
+        </div>
+
+        <v-btn @click="closeDialog">Cerrar</v-btn>
+        <v-btn @click="fncActualizarProducto()">Actualizar</v-btn>
+      </v-card>
+    </v-dialog>
+
+
+
+
     <v-snackbar v-model="snackbar.visible" :color="snackbar.color">
       {{ snackbar.message }}
     </v-snackbar>
@@ -115,9 +169,11 @@ export default {
   data() {
     return {
       productos: [],
+      productoActualizados: [],
       isLoading: true,
       error: null,
       dialogInsertar: false,
+      dialogActualizar: false,
       nombreProducto: '',
       file1: null,
       file2: null,
@@ -125,6 +181,15 @@ export default {
       descripcionProducto: '',
       precioProducto: null,
       existenciasProducto: null,
+      idA: null,
+      nombreAProducto: '',
+      descripcionAProducto: '',
+      precioAProducto: null,
+      existenciasAProducto: null,
+      categoriaAProducto: null,
+      fileA1: null,
+      fileA2: null,
+      fileA3: null,
       categoriaProducto: null,
       categorias: [],
       snackbar: {
@@ -135,6 +200,27 @@ export default {
     };
   },
   methods: {
+    async fncCargarDatos(idProducto) {
+      try {
+        const producto = this.productos.find((producto) => producto.id === idProducto);
+
+        if (!producto) throw new Error('Producto no encontrado');
+        this.idA = producto.id;
+        this.nombreAProducto = producto.nombre;
+        this.descripcionAProducto = producto.descripcion;
+        this.precioAProducto = producto.precio;
+        this.existenciasAProducto = producto.existencias;
+        this.categoriaAProducto = producto.categoria_id;
+        this.fileA1 = null;
+        this.fileA2 = null;
+        this.fileA3 = null;
+      } catch (err) {
+        console.error('Error al cargar datos del producto:', err.message);
+        this.showSnackbar('Error al cargar los datos del producto', 'error');
+      }
+    },
+
+
     async fncObtenerProductos() {
       try {
         const token = sessionStorage.getItem('token');
@@ -160,13 +246,15 @@ export default {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        this.categorias = response.data.categorias; // Asegúrate de que cada objeto tenga las propiedades 'id' y 'nombre'
-        console.log(this.categorias); // Verifica la estructura de los objetos
-
+        this.categorias = response.data.categorias;
       } catch (err) {
         console.error('Error al cargar categorías:', err.response?.data || err.message);
         this.showSnackbar('Error al cargar categorías. Por favor, inténtelo nuevamente.', 'error');
       }
+    },
+    getNombreCategoria(id) {
+      const categoria = this.categorias.find((cat) => cat.id === id);
+      return categoria ? categoria.nombre : 'Categoría desconocida';
     },
     closeDialog() {
       this.dialogInsertar = false;
@@ -182,7 +270,7 @@ export default {
           descripcion: this.descripcionProducto,
           precio: this.precioProducto,
           existencias: this.existenciasProducto,
-          categoria_id: this.categoriaProducto, // Enviar la categoría seleccionada
+          categoria_id: this.categoriaProducto,
         };
 
 
@@ -210,7 +298,6 @@ export default {
           productData.img3 = img3Base64;
         }
 
-        console.log(productData)
         const instance = axios.create({
           baseURL: 'http://localhost:8000/api',
           headers: {
@@ -230,6 +317,64 @@ export default {
         this.showSnackbar('Error al insertar el producto. Por favor, inténtelo nuevamente.', 'error');
       }
     },
+
+    async fncActualizarProducto() {
+      try {
+        const productData = {};
+
+        const convertToBase64 = (file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        };
+
+        // Obtener datos del producto
+        const { idA, nombreAProducto, descripcionAProducto, precioAProducto, existenciasAProducto } = this;
+
+        // Agregar datos al objeto productData
+        if (idA) productData.id = idA;
+        if (nombreAProducto) productData.nombre = nombreAProducto;
+        if (descripcionAProducto) productData.descripcion = descripcionAProducto;
+        if (precioAProducto) productData.precio = parseFloat(precioAProducto);
+        if (existenciasAProducto) productData.existencias = parseInt(existenciasAProducto);
+
+        // Convertir archivos a base64 si están presentes
+        if (this.fileA1) productData.imagen1 = await convertToBase64(this.fileA1);
+        if (this.fileA2) productData.imagen2 = await convertToBase64(this.fileA2);
+        if (this.fileA3) productData.imagen3 = await convertToBase64(this.fileA3);
+
+        console.log(productData);
+
+        // Configurar instancia Axios con token
+        const token = sessionStorage.getItem('token');
+        if (!token) throw new Error('No se encontró un token válido');
+
+        const instance = axios.create({
+          baseURL: 'http://localhost:8000/api',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        await instance.put(`/admin/productos/${idA}`, productData);
+        this.productos = this.productos.filter((producto) => producto.id !== idA);
+        this.showSnackbar('El producto ha sido actualizado con éxito', 'success');
+        this.resetFormulario();
+        this.dialogActualizar = false;
+        this.fncObtenerProductos();
+      } catch (error) {
+        console.error('Error al actualizar el producto:', error.response?.data || error.message);
+        this.showSnackbar(
+          error.response?.data?.message || 'Ha ocurrido un error al actualizar el producto',
+          'error'
+        );
+      }
+    },
+
     async fncEliminarProducto(id) {
       try {
         const token = sessionStorage.getItem('token');
@@ -243,9 +388,7 @@ export default {
           },
         });
 
-        console.log(`Intentando eliminar el producto con ID: ${id}`);
         const response = await instance.delete(`/admin/productos/${id}`);
-        console.log('Respuesta del servidor:', response.data);
         this.productos = this.productos.filter((producto) => producto.id !== id);
         this.showSnackbar('El producto ha sido eliminado con éxito', 'success');
       } catch (error) {
