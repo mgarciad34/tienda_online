@@ -97,8 +97,10 @@
           </form>
         </div>
 
-        <v-btn @click="closeDialog">Cerrar</v-btn>
-        <v-btn @click="fncInsertarProducto">Insertar</v-btn>
+        <v-col>
+          <v-btn color="green" @click="closeDialog">Cerrar</v-btn>
+          <v-btn color="red" @click="fncInsertarProducto">Insertar</v-btn>
+        </v-col>
       </v-card>
     </v-dialog>
 
@@ -107,7 +109,7 @@
       <v-card class="modal-container">
         <div class="modal-header">
           <h2>Actualizar Producto</h2>
-          <button @click="this.dialogActualizar= false;" class="btn-close">&times;</button>
+          <button @click="this.dialogActualizar = false;" class="btn-close">&times;</button>
         </div>
 
         <div class="modal-body">
@@ -148,8 +150,10 @@
           </form>
         </div>
 
-        <v-btn @click="closeDialog">Cerrar</v-btn>
-        <v-btn @click="fncActualizarProducto()">Actualizar</v-btn>
+        <v-col>
+          <v-btn color="red" @click="closeDialog">Cerrar</v-btn>
+          <v-btn color="primary" @click="fncActualizarProducto()">Actualizar</v-btn>
+        </v-col>
       </v-card>
     </v-dialog>
 
@@ -342,13 +346,21 @@ export default {
         if (existenciasAProducto) productData.existencias = parseInt(existenciasAProducto);
 
         // Convertir archivos a base64 si están presentes
-        if (this.fileA1) productData.imagen1 = await convertToBase64(this.fileA1);
-        if (this.fileA2) productData.imagen2 = await convertToBase64(this.fileA2);
-        if (this.fileA3) productData.imagen3 = await convertToBase64(this.fileA3);
+        if (this.fileA1 != null) {
+          const img1Base64 = await convertToBase64(this.fileA1);
+          productData.img1 = img1Base64;
+        }
 
-        console.log(productData);
+        if (this.fileA2 != null) {
+          const img2Base64 = await convertToBase64(this.fileA2);
+          productData.img2 = img2Base64;
+        }
 
-        // Configurar instancia Axios con token
+        if (this.fileA != null) {
+          const img3Base64 = await convertToBase64(this.fileA3);
+          productData.img3 = img3Base64;
+        }
+
         const token = sessionStorage.getItem('token');
         if (!token) throw new Error('No se encontró un token válido');
 
