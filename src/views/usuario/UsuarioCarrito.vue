@@ -2,7 +2,6 @@
     <v-app>      
       <EstructuraComponent />
       
-<p>carrito</p>
     </v-app>    
   </template>
   
