@@ -10,19 +10,23 @@
             <p>{{ item.description }}</p>
             <p>
               Cantidad:
-              <button @click="updateQuantity(index, item.quantity - 1, item)">-</button>
+              <button @click="actualizarCantidad(index, item.quantity - 1, item)">-</button>
               <input 
                 type="number" 
                 v-model.number="item.quantity" 
                 min="1"
-                @change="validateQuantity(index)" />
-              <button @click="updateQuantity(index, item.quantity + 1, item)">+</button>
+                @change="validarCantidad(index)" />
+              <button @click="actualizarCantidad(index, item.quantity + 1, item)">+</button>
             </p>
             <p>Precio: {{ item.price }} €</p>
             <p>Subtotal: {{ (item.quantity * item.price).toFixed(2) }} €</p>
           </div>
         </div>
-        <button @click="removeItem(index)" class="delete-button">Eliminar</button>
+        <button 
+          @click="removeItem(index, item.id)" 
+          class="delete-button">
+          Eliminar
+        </button>
       </div>
 
       <div class="cart-summary">
@@ -83,20 +87,19 @@ export default {
         alert("No se pudo cargar el carrito. Intenta nuevamente.");
       }
     },
-    validateQuantity(index) {
+    validarCantidad(index) {
       const item = this.cartItems[index];
       if (item.quantity < 1) {
         alert("La cantidad mínima es 1.");
         item.quantity = 1;
       }
     },
-    async updateQuantity(index, newQuantity, item) {
+    async actualizarCantidad(index, newQuantity, item) {
       if (newQuantity < 1) {
         alert("La cantidad mínima es 1.");
         return;
       }
 
-      // Optimistic UI update
       const previousQuantity = item.quantity;
       const newSubtotal = (item.price * newQuantity).toFixed(2);
       this.cartItems[index].quantity = newQuantity;
@@ -126,12 +129,27 @@ export default {
       } catch (error) {
         console.error("Error al actualizar el producto:", error);
         alert("Error al actualizar el producto. Intenta nuevamente.");
-        this.cartItems[index].quantity = previousQuantity; // Revert optimistic update
+        this.cartItems[index].quantity = previousQuantity; 
       }
     },
-    removeItem(index) {
+    async removeItem(index, itemId) {
       if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
-        this.cartItems.splice(index, 1);
+        try {
+          const token = sessionStorage.getItem("token");
+          await axios.delete(
+            `http://localhost:8000/api/usuario/eliminar/producto/${itemId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          console.log(`Producto eliminado: ID ${itemId}`);
+          this.cartItems.splice(index, 1);
+        } catch (error) {
+          console.error("Error al eliminar el producto:", error);
+          alert("No se pudo eliminar el producto. Inténtalo nuevamente.");
+        }
       }
     },
     checkout() {
@@ -191,6 +209,7 @@ button:hover {
 
 .delete-button {
   background-color: #f44336;
+  padding: 6px 12px;
 }
 
 .delete-button:hover {
