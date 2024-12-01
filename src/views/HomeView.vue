@@ -45,6 +45,7 @@ const handleLogin = () => {
         sessionStorage.setItem("correo", response.data.correo)
         sessionStorage.setItem("token", response.data.token)
         sessionStorage.setItem("rol", response.data.rol)
+        sessionStorage.setItem("id", response.data.id)
         window.location.href = "/usuario/dashboard"
       }
     })
