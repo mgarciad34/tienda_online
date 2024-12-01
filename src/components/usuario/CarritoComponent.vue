@@ -172,6 +172,7 @@ export default {
           amount: this.totalInCents,
           currency: "eur",
           stripeToken: "tok_visa",
+          usuarioId: sessionStorage.getItem("id")
         };
 
         const response = await axios.post(
