@@ -301,6 +301,8 @@ export default {
           productData.img3 = img3Base64;
         }
 
+        console.log(productData)
+
         const instance = axios.create({
           baseURL: 'http://localhost:8000/api',
           headers: {
