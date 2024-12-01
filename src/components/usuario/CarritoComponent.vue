@@ -10,13 +10,13 @@
             <p>{{ item.description }}</p>
             <p>
               Cantidad:
-              <button @click="actualizarCantidad(index, item.quantity - 1, item)">-</button>
+              <button @click="updateQuantity(index, item.quantity - 1, item)">-</button>
               <input 
                 type="number" 
                 v-model.number="item.quantity" 
                 min="1"
-                @change="validarCantidad(index)" />
-              <button @click="actualizarCantidad(index, item.quantity + 1, item)">+</button>
+                @change="validateQuantity(index)" />
+              <button @click="updateQuantity(index, item.quantity + 1, item)">+</button>
             </p>
             <p>Precio: {{ item.price }} €</p>
             <p>Subtotal: {{ (item.quantity * item.price).toFixed(2) }} €</p>
@@ -32,7 +32,7 @@
       <div class="cart-summary">
         <h3>Resumen de la compra</h3>
         <p>Total: {{ total }} €</p>
-        <button @click="checkout">Finalizar Compra</button>
+        <button @click="pagoProductos">Finalizar Compra</button>
       </div>
     </div>
 
@@ -58,14 +58,27 @@ export default {
         0
       ).toFixed(2);
     },
+    totalInCents() {
+      return Math.round(this.total * 100);
+    },
   },
   methods: {
     async cargarDatos() {
       try {
         const token = sessionStorage.getItem("token");
         const id = sessionStorage.getItem("id");
+        
+        const cogerCarrito = await axios.get(
+          `http://localhost:8000/api/usuario/obtener/estado/cesta/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
         const response = await axios.get(
-          `http://localhost:8000/api/usuario/carrito/${id}`,
+          `http://localhost:8000/api/usuario/carrito/${cogerCarrito.data.data.id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -87,14 +100,14 @@ export default {
         alert("No se pudo cargar el carrito. Intenta nuevamente.");
       }
     },
-    validarCantidad(index) {
+    validateQuantity(index) {
       const item = this.cartItems[index];
       if (item.quantity < 1) {
         alert("La cantidad mínima es 1.");
         item.quantity = 1;
       }
     },
-    async actualizarCantidad(index, newQuantity, item) {
+    async updateQuantity(index, newQuantity, item) {
       if (newQuantity < 1) {
         alert("La cantidad mínima es 1.");
         return;
@@ -129,7 +142,7 @@ export default {
       } catch (error) {
         console.error("Error al actualizar el producto:", error);
         alert("Error al actualizar el producto. Intenta nuevamente.");
-        this.cartItems[index].quantity = previousQuantity; 
+        this.cartItems[index].quantity = previousQuantity;
       }
     },
     async removeItem(index, itemId) {
@@ -152,8 +165,31 @@ export default {
         }
       }
     },
-    checkout() {
-      alert("Proceso de compra iniciado.");
+    async pagoProductos() {
+      try {
+        const token = sessionStorage.getItem("token");
+        const datos = {
+          amount: this.totalInCents,
+          currency: "eur",
+          stripeToken: "tok_visa",
+        };
+
+        const response = await axios.post(
+          "http://localhost:8000/api/usuario/stripe",
+          datos,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log("Pago exitoso:", response.data);
+        this.cartItems = [];
+      } catch (error) {
+        console.error("Error durante el proceso de pago:", error);
+        alert("Hubo un error al procesar el pago. Intenta nuevamente.");
+      }
     },
   },
   mounted() {
