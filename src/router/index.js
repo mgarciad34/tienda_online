@@ -58,11 +58,6 @@ const router = createRouter({
       name: 'usuarioCarrito',
       component: UsuarioCarrito
     },
-    {
-      path: '/usuario/historial',
-      name: 'usuarioHistorial',
-      component: UsuarioHistorial
-    },
   ]
 })
 
