@@ -15,6 +15,9 @@
                     <v-btn @click="fncUsuario()">
                         <v-icon>mdi-account-circle</v-icon>
                     </v-btn>
+                    <v-btn @click="fncHistorial()">
+                        <v-icon>mdi-history</v-icon>
+                    </v-btn>
                     <v-btn @click="fncCerrar()">
                         <v-icon>mdi-logout</v-icon>
                     </v-btn>
@@ -47,6 +50,11 @@
                             style="display: block;" />
                     </template>
 
+                    <template v-if="$route.path === '/usuario/historial'">
+                        <HistorialComponent v-if="$route.path.includes('/usuario/historial')" id="HistorialComponent"
+                            style="display: block;" />
+                    </template>
+
                     <template v-if="$route.path === '/usuario/carrito'">
                         <CarritoComponent v-if="$route.path.includes('/usuario/carrito')" id="CarritoComponent"
                             style="display: block" />
@@ -63,12 +71,14 @@ import axios from 'axios'
 import PerfilComponent from './PerfilComponent.vue';
 import TiendaComponent from './TiendaComponent.vue';
 import CarritoComponent from './CarritoComponent.vue'
+import HistorialComponent from './HistorialComponent.vue';
 
 export default {
     components: {
         PerfilComponent,
         TiendaComponent,
-        CarritoComponent
+        CarritoComponent,
+        HistorialComponent
     },
     data() {
         return {
@@ -99,6 +109,9 @@ export default {
         },
         fncUsuario(){
             this.$router.push({ name: 'usuarioPerfil' });
+        },
+        fncHistorial(){
+            this.$router.push({ name: 'usuarioHistorial' });
         },
         fncCerrar() {
             axios.post('http://localhost:8000/api/logout', null, {

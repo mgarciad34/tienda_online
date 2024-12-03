@@ -8,6 +8,7 @@ import AdminCategorias from '@/views/admin/AdminCategorias.vue'
 import AdminProductos from '@/views/admin/AdminProductos.vue'
 import UsuarioPerfil from '@/views/usuario/UsuarioPerfil.vue'
 import UsuarioCarrito from '@/views/usuario/UsuarioCarrito.vue'
+import UsuarioHistorial from '@/views/usuario/UsuarioHistorial.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,6 +57,11 @@ const router = createRouter({
       path: '/usuario/carrito',
       name: 'usuarioCarrito',
       component: UsuarioCarrito
+    },
+    {
+      path: '/usuario/historial',
+      name: 'usuarioHistorial',
+      component: UsuarioHistorial
     },
   ]
 })
