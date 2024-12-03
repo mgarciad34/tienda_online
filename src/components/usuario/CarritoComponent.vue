@@ -11,20 +11,14 @@
             <p>
               Cantidad:
               <button @click="updateQuantity(index, item.quantity - 1, item)">-</button>
-              <input 
-                type="number" 
-                v-model.number="item.quantity" 
-                min="1"
-                @change="validateQuantity(index)" />
+              <input type="number" v-model.number="item.quantity" min="1" @change="validateQuantity(index)" />
               <button @click="updateQuantity(index, item.quantity + 1, item)">+</button>
             </p>
             <p>Precio: {{ item.price }} €</p>
             <p>Subtotal: {{ (item.quantity * item.price).toFixed(2) }} €</p>
           </div>
         </div>
-        <button 
-          @click="removeItem(index, item.id)" 
-          class="delete-button">
+        <button @click="removeItem(index, item.id)" class="delete-button">
           Eliminar
         </button>
       </div>
@@ -67,7 +61,7 @@ export default {
       try {
         const token = sessionStorage.getItem("token");
         const id = sessionStorage.getItem("id");
-        
+
         const cogerCarrito = await axios.get(
           `http://localhost:8000/api/usuario/obtener/estado/cesta/${id}`,
           {
@@ -184,8 +178,7 @@ export default {
             },
           }
         );
-
-        console.log("Pago exitoso:", response.data);
+        console.log(response.data);
         this.cartItems = [];
       } catch (error) {
         console.error("Error durante el proceso de pago:", error);
@@ -274,10 +267,12 @@ p {
   .cart-page {
     padding: 10px;
   }
+
   .cart-item {
     flex-direction: column;
     align-items: center;
   }
+
   .product-image {
     margin-bottom: 10px;
   }
