@@ -1,5 +1,6 @@
 <template>
     <div class="store-container">
+        <!-- Toolbar -->
         <div class="toolbar">
             <input v-model="searchQuery" type="text" placeholder="Buscar productos" class="search-bar">
             <select v-model="selectedCategory" class="select-bar">
@@ -13,15 +14,18 @@
         <!-- Lista de recomendaciones -->
         <div class="recommendations">
             <h2>Recomendaciones para ti</h2>
-            <div v-if="recomendaciones.length > 0" class="product-list">
+            <div v-if="recomendaciones.length > 0" class="product-grid">
                 <div v-for="product in recomendaciones" :key="product.id" class="product-card">
-                    <img :src="product?.image" alt="Imagen del producto" class="product-image" />
-                    <h3>{{ product?.nombre }}</h3>
-                    <h5>{{ product?.descripcion }}</h5>
-                    <p class="price">{{ (product?.price && !isNaN(product.price)) ? product.price.toFixed(2) : 'N/A' }} €</p>
-                    <button class="add-to-cart" @click="addToCart(product?.id)">
-                        Añadir al carrito
-                    </button>
+                    <v-carousel :show-arrows="false" height="200px">
+                        <v-carousel-item v-for="(img, index) in [product.img1, product.img2, product.img3]"
+                            :key="index">
+                            <v-img :src="img" alt="Imagen del producto" class="producto-img" height="200px"></v-img>
+                        </v-carousel-item>
+                    </v-carousel>
+
+                    <h3>{{ product.nombre }}</h3>
+                    <p class="price">{{ product.precio.toFixed(2) }} €</p>
+                    <button @click="addToCart(product)" class="add-to-cart">Añadir al carrito</button>
                 </div>
             </div>
             <div v-else class="no-results">
@@ -32,15 +36,18 @@
         <!-- Lista de productos -->
         <div class="products">
             <h2>Lista de productos</h2>
-            <div v-if="filteredProducts.length > 0" class="product-list">
+            <div v-if="filteredProducts.length > 0" class="product-grid">
                 <div v-for="product in filteredProducts" :key="product.id" class="product-card">
-                    <img :src="product?.image" alt="Imagen del producto" class="product-image" />
-                    <h3>{{ product?.nombre }}</h3>
-                    <h5>{{ product?.descripcion }}</h5>
-                    <p class="price">{{ (product?.price && !isNaN(product.price)) ? product.price.toFixed(2) : 'N/A' }} €</p>
-                    <button class="add-to-cart" @click="addToCart(product?.id)">
-                        Añadir al carrito
-                    </button>
+                    <v-carousel :show-arrows="false" height="200px">
+                        <v-carousel-item v-for="(img, index) in [product.img1, product.img2, product.img3]"
+                            :key="index">
+                            <v-img :src="img" alt="Imagen del producto" class="producto-img" height="200px"></v-img>
+                        </v-carousel-item>
+                    </v-carousel>
+
+                    <h3>{{ product.nombre }}</h3>
+                    <p class="price">{{ product.precio.toFixed(2) }} €</p>
+                    <button @click="addToCart(product)" class="add-to-cart">Añadir al carrito</button>
                 </div>
             </div>
             <div v-else class="no-results">
@@ -49,8 +56,6 @@
         </div>
     </div>
 </template>
-
-
 <script>
 import axios from 'axios';
 
@@ -107,7 +112,7 @@ export default {
                 };
                 const response = await axios.get(`http://localhost:8000/api/usuario/productos/recomendaciones/${usuarioId}`, config);
                 this.recomendaciones = response.data.productos.map(product => ({
-                   ...product,
+                    ...product,
                     price: product.precio,
                 }));
             } catch (error) {
@@ -135,13 +140,42 @@ export default {
             }
         },
 
-        addToCart(product) {
-            if (product && !isNaN(product.id)) {
-                alert(`Añadido al carrito: ${product?.name}`);
-            } else {
-                console.warn('Invalid product ID:', product);
+        async addToCart(product) {
+            try {
+                // Fetch cart state
+                const idUsuario = sessionStorage.getItem('id');
+                const token = sessionStorage.getItem('token');
+                const config = {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                };
+
+                const ultimaCesta = await axios.get(`http://localhost:8000/api/usuario/obtener/estado/cesta/${idUsuario}`, config);
+                const idCesta = ultimaCesta.data.data.id
+
+                // Add new product to cart
+                const payload = {
+                    cesta_id: idCesta,
+                    producto_id: product.id,
+                    cantidad: 1,
+                    precio_unitario: product.precio,
+                    subtotal: product.precio
+                };
+
+
+                // Send POST request to add product to cart
+                const response = await axios.post('http://localhost:8000/api/usuario/agregar/producto', payload, config);
+
+                console.log('Producto agregado al carrito con éxito');
+                alert(`Añadido al carrito: ${product.nombre}`);
+
+            } catch (error) {
+                console.error('Error al agregar al carrito:', error.response?.data || 'Error desconocido');
+                alert('Ocurrió un error al agregar el producto al carrito. Por favor, inténtelo de nuevo.');
             }
         },
+
     },
     async created() {
         try {
@@ -166,85 +200,26 @@ export default {
 
 .toolbar {
     display: flex;
-    gap: 20px;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
 }
 
-.search-container {
-    flex: 2;
-    display: flex;
-    flex-direction: column;
-}
-
-.search-label {
-    font-size: 16px;
-    margin-bottom: 8px;
-    color: #424242;
-}
-
 .search-bar {
-    padding: 10px 12px;
-    font-size: 14px;
-    border: 1px solid #bdbdbd;
+    width: 200px;
+    padding: 8px;
+    border: 1px solid #ccc;
     border-radius: 4px;
-    outline: none;
-    transition: border-color 0.2s ease;
 }
 
-.search-bar:focus {
-    border-color: #3f51b5;
-    box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
-}
-
-.select-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.select-label {
-    font-size: 16px;
-    margin-bottom: 8px;
-    color: #424242;
-}
-
-.select-wrapper {
-    position: relative;
-}
-
-select {
-    width: 100%;
-    padding: 10px 12px;
-    font-size: 14px;
-    border: 1px solid #bdbdbd;
+.select-bar {
+    padding: 8px;
+    border: 1px solid #ccc;
     border-radius: 4px;
-    outline: none;
-    transition: border-color 0.2s ease;
+    background-color: white;
 }
 
-select:focus {
-    border-color: #3f51b5;
-    box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
-}
-
-.loading-spinner {
-    position: absolute;
-    right: 10px;
-    width: 16px;
-    height: 16px;
-    border: 2px solid #bdbdbd;
-    border-top-color: #3f51b5;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.product-list {
+.product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
@@ -263,11 +238,10 @@ select:focus {
     transform: scale(1.05);
 }
 
-.product-image {
+.producto-img {
     width: 100%;
     height: auto;
-    border-radius: 8px;
-    margin-bottom: 12px;
+    object-fit: cover;
 }
 
 .price {
@@ -278,17 +252,13 @@ select:focus {
 }
 
 .add-to-cart {
-    padding: 10px 20px;
+    padding: 8px 16px;
     background-color: #4caf50;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-}
-
-.add-to-cart:hover {
-    background-color: #45a049;
 }
 
 .no-results {
