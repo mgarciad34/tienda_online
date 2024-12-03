@@ -2,13 +2,18 @@
     <div class="store-container">
         <!-- Toolbar -->
         <div class="toolbar">
-            <input v-model="searchQuery" type="text" placeholder="Buscar productos" class="search-bar">
-            <select v-model="selectedCategory" class="select-bar">
-                <option value="" selected>Todas las categorías</option>
-                <option v-for="categoria in categorias" :value="categoria.id" :key="categoria.id">
-                    {{ categoria.nombre }}
-                </option>
-            </select>
+            <div class="search-input-container">
+                <input v-model="searchQuery" type="text" placeholder="Buscar productos" class="search-bar"
+                    @input="filterProducts()">
+            </div>
+            <div class="select-container">
+                <select v-model="selectedCategory" class="select-bar">
+                    <option value="" selected>Todas las categorías</option>
+                    <option v-for="categoria in categorias" :value="categoria.id" :key="categoria.id">
+                        {{ categoria.nombre }}
+                    </option>
+                </select>
+            </div>
         </div>
 
         <!-- Lista de recomendaciones -->
@@ -56,6 +61,7 @@
         </div>
     </div>
 </template>
+
 <script>
 import axios from 'axios';
 
@@ -67,19 +73,18 @@ export default {
             searchQuery: '',
             selectedCategory: null,
             loading: true,
-            products: [], // Initialize this array
+            products: [], // Array principal de productos
+            filteredProducts: [] // Array para almacenar los productos filtrados
         };
     },
     computed: {
         filteredProducts() {
             return this.products.filter(product => {
-                const name = product?.name || '';
-                const category = product?.category || '';
+                const name = product?.nombre || '';
+                const category = product?.categoria || '';
 
                 const matchesName = name.toLowerCase().includes(this.searchQuery.toLowerCase());
-                const matchesCategory = this.selectedCategory
-                    ? category === this.selectedCategory
-                    : true;
+                const matchesCategory = !this.selectedCategory || category === this.selectedCategory;
 
                 return matchesName && matchesCategory;
             });
@@ -131,10 +136,12 @@ export default {
                 const response = await axios.get(`http://localhost:8000/api/usuario/productos`, config);
                 this.products = response.data.productos.map(product => ({
                     ...product,
-                    name: product.name || '',
-                    category: product.category || '',
-                    price: product.precio || "N/A",
+                    nombre: product.nombre || '',
+                    categoria: product.categoria || '',
+                    precio: product.precio || "N/A",
                 }));
+                // Filtrar los productos al obtenerlos
+                this.filterProducts();
             } catch (error) {
                 console.error('Error fetching products:', error);
             }
@@ -142,7 +149,6 @@ export default {
 
         async addToCart(product) {
             try {
-                // Fetch cart state
                 const idUsuario = sessionStorage.getItem('id');
                 const token = sessionStorage.getItem('token');
                 const config = {
@@ -154,7 +160,6 @@ export default {
                 const ultimaCesta = await axios.get(`http://localhost:8000/api/usuario/obtener/estado/cesta/${idUsuario}`, config);
                 const idCesta = ultimaCesta.data.data.id
 
-                // Add new product to cart
                 const payload = {
                     cesta_id: idCesta,
                     producto_id: product.id,
@@ -163,8 +168,6 @@ export default {
                     subtotal: product.precio
                 };
 
-
-                // Send POST request to add product to cart
                 const response = await axios.post('http://localhost:8000/api/usuario/agregar/producto', payload, config);
 
                 console.log('Producto agregado al carrito con éxito');
@@ -176,6 +179,17 @@ export default {
             }
         },
 
+        filterProducts() {
+            this.filteredProducts = this.products.filter(product => {
+                const name = product.nombre.toLowerCase();
+                const category = product.categoria.toLowerCase();
+
+                const matchesName = name.includes(this.searchQuery.toLowerCase());
+                const matchesCategory = !this.selectedCategory || category === this.selectedCategory;
+
+                return matchesName && matchesCategory;
+            });
+        },
     },
     async created() {
         try {
@@ -205,18 +219,26 @@ export default {
     margin-bottom: 20px;
 }
 
-.search-bar {
-    width: 200px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+.search-input-container,
+.select-container {
+    flex: 1;
+    padding-right: 10px;
 }
 
+.search-input-container {
+    flex: 3;
+}
+
+.select-container {
+    flex: 1;
+}
+
+.search-bar,
 .select-bar {
+    width: 100%;
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    background-color: white;
 }
 
 .product-grid {
