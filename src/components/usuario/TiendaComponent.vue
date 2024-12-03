@@ -6,14 +6,7 @@
                 <input v-model="searchQuery" type="text" placeholder="Buscar productos" class="search-bar"
                     @input="filterProducts()">
             </div>
-            <div class="select-container">
-                <select v-model="selectedCategory" class="select-bar">
-                    <option value="" selected>Todas las categorías</option>
-                    <option v-for="categoria in categorias" :value="categoria.id" :key="categoria.id">
-                        {{ categoria.nombre }}
-                    </option>
-                </select>
-            </div>
+              
         </div>
 
         <!-- Lista de recomendaciones -->
