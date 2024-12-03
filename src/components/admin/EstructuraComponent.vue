@@ -108,6 +108,7 @@
                 sessionStorage.removeItem('correo');
                 sessionStorage.removeItem('token');
                 sessionStorage.removeItem('rol');
+                sessionStorage.removeItem('id');
                 this.$router.push('/');
               })
               .catch(error => {

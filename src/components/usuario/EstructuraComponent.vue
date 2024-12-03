@@ -101,22 +101,23 @@ export default {
             this.$router.push({ name: 'usuarioPerfil' });
         },
         fncCerrar() {
+            const token = sessionStorage.getItem('token')
             axios.post('http://localhost:8000/api/logout', null, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
             })
-                .then(response => {
-                    console.log('Sesión cerrada:', response.data);
-                    sessionStorage.removeItem('correo');
-                    sessionStorage.removeItem('token');
-                    sessionStorage.removeItem('rol');
-                    sessionStorage.removeItem('id');
-                    this.$router.push('/');
-                })
-                .catch(error => {
-                    console.error('Error al cerrar sesión:', error);
-                });
+              .then(response => {
+                console.log('Sesión cerrada:', response.data);
+                sessionStorage.removeItem('correo');
+                sessionStorage.removeItem('token');
+                sessionStorage.removeItem('rol');
+                sessionStorage.removeItem('id');
+                this.$router.push('/');
+              })
+              .catch(error => {
+                console.error('Error al cerrar sesión:', error);
+              });
         },
         getIcon(iconName) {
             switch (iconName) {
