@@ -7,7 +7,7 @@
           outlined
           elevation="4"
           hover
-          :style="{ backgroundColor: '#FFB300', borderRadius: '16px' }"
+          :style="{ backgroundColor: '#1867C0', borderRadius: '16px' }"
         >
           <v-icon size="64" class="mb-3" color="black">mdi-view-list</v-icon>
           <h3 class="text-h6 font-weight-bold mb-2" style="color: black;">Ver Categorías</h3>
@@ -36,7 +36,7 @@
           outlined
           elevation="4"
           hover
-          :style="{ backgroundColor: '#FFB300', borderRadius: '16px' }"
+          :style="{ backgroundColor: '#1867C0', borderRadius: '16px' }"
         >
           <v-icon size="64" class="mb-3" color="black">mdi-package-variant</v-icon>
           <h3 class="text-h6 font-weight-bold mb-2;" style="color: black;">Ver Productos</h3>
