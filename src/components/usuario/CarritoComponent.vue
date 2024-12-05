@@ -162,13 +162,30 @@ export default {
     async pagoProductos() {
       try {
         const token = sessionStorage.getItem("token");
+        const usuarioId = sessionStorage.getItem("id");
+
+        // Obtener el estado de la cesta
+        const obtenerCesta = await axios.get(
+          `http://localhost:8000/api/usuario/obtener/estado/cesta/${usuarioId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const cestaId = obtenerCesta.data.data.id;
+
+        // Crear los datos del pago
         const datos = {
           amount: this.totalInCents,
           currency: "eur",
           stripeToken: "tok_visa",
-          usuarioId: sessionStorage.getItem("id")
+          usuarioId: usuarioId,
+          cestaId: cestaId,
         };
 
+        // Realizar la solicitud de pago
         const response = await axios.post(
           "http://localhost:8000/api/usuario/stripe",
           datos,
@@ -178,13 +195,16 @@ export default {
             },
           }
         );
+
         console.log(response.data);
-        this.cartItems = [];
+        this.cartItems = []; // Vaciar el carrito tras el pago exitoso
+        alert("Pago realizado con éxito.");
       } catch (error) {
         console.error("Error durante el proceso de pago:", error);
         alert("Hubo un error al procesar el pago. Intenta nuevamente.");
       }
     },
+
   },
   mounted() {
     this.cargarDatos();
