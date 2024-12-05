@@ -130,9 +130,6 @@ export default {
             },
           }
         );
-        console.log(
-          `Producto actualizado: ${item.name}, cantidad: ${newQuantity}, subtotal: ${newSubtotal} €`
-        );
       } catch (error) {
         console.error("Error al actualizar el producto:", error);
         alert("Error al actualizar el producto. Intenta nuevamente.");
@@ -151,7 +148,6 @@ export default {
               },
             }
           );
-          console.log(`Producto eliminado: ID ${itemId}`);
           this.cartItems.splice(index, 1);
         } catch (error) {
           console.error("Error al eliminar el producto:", error);
@@ -164,7 +160,6 @@ export default {
         const token = sessionStorage.getItem("token");
         const usuarioId = sessionStorage.getItem("id");
 
-        // Obtener el estado de la cesta
         const obtenerCesta = await axios.get(
           `http://localhost:8000/api/usuario/obtener/estado/cesta/${usuarioId}`,
           {
@@ -176,7 +171,6 @@ export default {
 
         const cestaId = obtenerCesta.data.data.id;
 
-        // Crear los datos del pago
         const datos = {
           amount: this.totalInCents,
           currency: "eur",
@@ -185,7 +179,6 @@ export default {
           cestaId: cestaId,
         };
 
-        // Realizar la solicitud de pago
         const response = await axios.post(
           "http://localhost:8000/api/usuario/stripe",
           datos,
@@ -194,10 +187,8 @@ export default {
               Authorization: `Bearer ${token}`,
             },
           }
-        );
-
-        console.log(response.data);
-        this.cartItems = []; // Vaciar el carrito tras el pago exitoso
+        );        
+        this.cartItems = [];
         alert("Pago realizado con éxito.");
       } catch (error) {
         console.error("Error durante el proceso de pago:", error);
