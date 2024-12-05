@@ -2,7 +2,7 @@
     <div id="app">
       <v-app>
         <v-app-bar app>
-          <v-toolbar flat style="background-color:#FFB300;">
+          <v-toolbar flat style="background-color:rgb(24,103,192);">
             <v-toolbar-title style="color: black;">Administrador Tienda Online</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-menu bottom left>
@@ -13,7 +13,7 @@
               </template>
               <v-list>
                 <v-list-item v-for="(link, index) in links" :key="index" :title="link[0]"
-                  :prepend-icon="getIcon(link[0])" @click="fncOpciones(index)" link></v-list-item>
+                  :prepend-icon="fncVerIcono(link[0])" @click="fncOpciones(index)" link></v-list-item>
               </v-list>
             </v-menu>
           </v-toolbar>
@@ -25,7 +25,6 @@
               <v-col cols="12">
                 <v-navigation-drawer v-model="drawer" temporary fixed>
                   <v-list>
-                    <!-- Aquí irán los elementos del drawer -->
                     <v-list-item v-for="(item, index) in items" :key="index" :to="item.to" router exact>
                       <v-list-item-title>{{ item.title }}</v-list-item-title>
                     </v-list-item>
@@ -80,7 +79,7 @@
       }
     },
     computed: {
-      isCategoriasRoute() {
+      fncRutaCategoria() {
         return this.$route.path.includes('/admin/dashboard/categorias');
       }
     },
@@ -120,7 +119,7 @@
             break;
         }
       },
-      getIcon(iconName) {
+      fncVerIcono(iconName) {
         switch (iconName) {
           case 'Categoria':
             return 'mdi-folder'
