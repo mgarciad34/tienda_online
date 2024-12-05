@@ -87,7 +87,6 @@ export default {
           { nombre: this.txtNombreCategoria },
           config);
 
-        console.log('Categoria creada:', response.data);
 
         this.txtNombreCategoria = '';
         this.items.push(response.data.categoria);
@@ -139,7 +138,6 @@ export default {
       }
     },
     async fncEliminarCategoria(item) {
-      console.log('Eliminar categoría:', item);
       try {
         const token = sessionStorage.getItem('token');
         await axios.delete(`http://localhost:8000/api/admin/categorias/${item.id}`, {

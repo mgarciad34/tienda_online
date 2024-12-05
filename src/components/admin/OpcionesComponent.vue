@@ -1,7 +1,6 @@
 <template>
   <v-container class="fill-height" fluid>
     <v-row justify="center" align="center" dense>
-      <!-- Módulo Ver Categorías -->
       <v-col cols="12" sm="6" md="4" class="mb-4">
         <v-card
           class="pa-4 d-flex flex-column align-center justify-center"
@@ -31,7 +30,6 @@
         </v-card>
       </v-col>
 
-      <!-- Módulo Ver Productos -->
       <v-col cols="12" sm="6" md="4">
         <v-card
           class="pa-4 d-flex flex-column align-center justify-center"
