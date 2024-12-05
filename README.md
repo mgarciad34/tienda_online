@@ -1,29 +1,14 @@
-# tienda_online
+#  Cliente Tienda online
 
-This template should help get you started developing with Vue 3 in Vite.
+A continuacion detallaremos los pasos a seguir para poder realizar correctamente la instalacion y ejecucion del cliente en Vue.JS
 
-## Recommended IDE Setup
+## Instalacion del proyecto
+Para realizar la instalacion del proyecto es necesario ejecutar el siguiente comando:
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+`npm install`
 
-## Customize configuration
+Una vez realizado todo esto ya podemos ejecutar nuestro cliente con el siguiente comando:
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+`npm run dev`
 
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
+Para cancelar la ejecucion del cliente es necesario presionar `Ctrl + C` en el terminal.
