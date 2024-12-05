@@ -1,26 +1,12 @@
 <template>
   <v-container fluid>
-    <!-- Botón para abrir el diálogo de creación -->
-    <v-btn color="green" @click="dialogInsertar = true" class="mb-4">
+    <v-btn color="primary" @click="dialogInsertar = true" class="mb-4">
       <v-icon>mdi-plus</v-icon> Crear nuevo producto
     </v-btn>
 
-
-    <!-- Cargando productos o mostrando productos -->
+<!--Mostramos los productos-->
     <v-row>
-      <v-col cols="12" v-if="isLoading">
-        <v-alert type="info" text>
-          Cargando productos...
-        </v-alert>
-      </v-col>
-
-      <v-col cols="12" v-else-if="error">
-        <v-alert type="error" text>
-          {{ error }}
-        </v-alert>
-      </v-col>
-
-      <v-col v-else v-for="producto in productos" :key="producto.id" cols="12" sm="6" md="4" lg="3">
+      <v-col  v-for="producto in productos" :key="producto.id" cols="12" sm="6" md="4" lg="3">
         <v-card class="producto-card" elevation="4" hover>
           <v-carousel :show-arrows="false" height="200px">
             <v-carousel-item v-for="(img, index) in [producto.img1, producto.img2, producto.img3]" :key="index">
@@ -76,11 +62,9 @@
                 <v-file-input v-model="file2" label="Seleccionar imagen 2" accept="image/*" outlined></v-file-input>
                 <v-file-input v-model="file3" label="Seleccionar imagen 3" accept="image/*" outlined></v-file-input>
               </div>
-
               <v-textarea v-model="descripcionProducto" label="Escribe la descripción del producto" required />
               <v-text-field v-model="precioProducto" type="number" label="Escribe el precio del producto" min="0"
                 required />
-
               <v-text-field v-model="existenciasProducto" type="number" label="Escribe las existencias del producto"
                 min="0" required />
             </div>
@@ -97,8 +81,8 @@
         </div>
 
         <v-col>
-          <v-btn color="green" @click="closeDialog">Cerrar</v-btn>
-          <v-btn color="red" @click="fncInsertarProducto">Insertar</v-btn>
+          <v-btn color="red" @click="closeDialog">Cerrar</v-btn>
+          <v-btn color="green" @click="fncInsertarProducto">Insertar</v-btn>
         </v-col>
       </v-card>
     </v-dialog>
@@ -114,28 +98,17 @@
         <div class="modal-body">
           <form class="product-form">
             <div class="form-group">
-              <!-- Nombre -->
               <v-text-field v-model="nombreAProducto" label="Nombre del producto" required />
-
-              <!-- Imágenes -->
               <div class="file-inputs">
                 <v-file-input v-model="fileA1" label="Seleccionar imagen 1 (Opcional)" accept="image/*" outlined />
                 <v-file-input v-model="fileA2" label="Seleccionar imagen 2 (Opcional)" accept="image/*" outlined />
                 <v-file-input v-model="fileA3" label="Seleccionar imagen 3 (Opcional)" accept="image/*" outlined />
               </div>
-
-              <!-- Descripción -->
               <v-textarea v-model="descripcionAProducto" label="Descripción del producto" required />
-
-              <!-- Precio -->
               <v-text-field v-model="precioAProducto" type="number" label="Precio del producto" min="0" required />
-
-              <!-- Existencias -->
               <v-text-field v-model="existenciasAProducto" type="number" label="Existencias del producto" min="0"
                 required />
             </div>
-
-            <!-- Selector de Categoría -->
             <div class="custom-select">
               <select id="categoriaAProducto" name="categoriaAProducto" v-model="categoriaAProducto" required>
                 <option value="" disabled selected>
@@ -155,10 +128,6 @@
         </v-col>
       </v-card>
     </v-dialog>
-
-
-
-
     <v-snackbar v-model="snackbar.visible" :color="snackbar.color">
       {{ snackbar.message }}
     </v-snackbar>
@@ -222,7 +191,6 @@ export default {
         this.showSnackbar('Error al cargar los datos del producto', 'error');
       }
     },
-
 
     async fncObtenerProductos() {
       try {
@@ -300,7 +268,6 @@ export default {
           img3Base64 = await convertToBase64(this.file3);
           productData.img3 = img3Base64;
         }
-
         const instance = axios.create({
           baseURL: 'http://localhost:8000/api',
           headers: {
@@ -310,7 +277,6 @@ export default {
         });
 
         const response = await instance.post('/admin/productos', productData);
-        console.log(response.data);
 
         this.resetFormulario();
         this.closeDialog();
@@ -346,7 +312,7 @@ export default {
         }
         if (existenciasAProducto) productData.existencias = parseInt(existenciasAProducto);
 
-        // Convertir archivos a base64 si están presentes
+        // Convertir archivos a base64 si estan
         if (this.fileA1 != null) {
           const img1Base64 = await convertToBase64(this.fileA1);
           productData.img1 = img1Base64;
@@ -429,7 +395,7 @@ export default {
   },
   mounted() {
     this.fncObtenerProductos();
-    this.fncObtenerCategorias(); // Cargar las categorías al montar el componente
+    this.fncObtenerCategorias();
   },
 };
 </script>
@@ -598,14 +564,11 @@ export default {
 
 .custom-select select {
   -ms-overflow-style: none;
-  /* IE and Edge */
   scrollbar-width: none;
-  /* Firefox */
 }
 
 .custom-select::after {
   content: '\25BC';
-  /* Triangular arrow */
   position: absolute;
   right: 15px;
   top: 50%;

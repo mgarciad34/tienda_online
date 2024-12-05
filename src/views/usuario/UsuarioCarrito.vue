@@ -2,7 +2,6 @@
     <v-app>      
       <EstructuraComponent />
       
-
     </v-app>    
   </template>
   

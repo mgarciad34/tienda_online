@@ -59,15 +59,12 @@ const handleRegistro = async () => {
         // Petición al backend
         const response = await axios.post('http://localhost:8000/api/registro', data);
 
-        // Comprobar si la respuesta es exitosa
         if (response.status === 201) {
-            alert('Usuario registrado exitosamente. Redirigiendo...');
             router.push('/');
         } else {
             throw new Error('El registro falló. Intenta nuevamente.');
         }
     } catch (error) {
-        // Manejo de errores
         console.error('Error:', error);
 
         if (error.response && error.response.data) {
@@ -81,7 +78,6 @@ const handleRegistro = async () => {
 </script>
 
 <style scoped>
-/* Mantengo el mismo CSS, ya que está bien diseñado */
 body {
     margin: 0;
     padding: 0;
